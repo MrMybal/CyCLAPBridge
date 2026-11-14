@@ -1,0 +1,9 @@
+desc:CyBridge JSFX Gain
+slider1:1<0,2,0.01>Gain
+in_pin:Left
+in_pin:Right
+out_pin:Left
+out_pin:Right
+@sample
+spl0 *= slider1;
+spl1 *= slider1;

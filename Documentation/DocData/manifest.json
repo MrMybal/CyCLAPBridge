@@ -1,0 +1,616 @@
+{
+  "schemaVersion": 1,
+  "name": "CyCLAPBridge",
+  "version": "0.2.0",
+  "defaultLocale": "en",
+  "locales": [
+    {
+      "code": "en",
+      "label": "English"
+    },
+    {
+      "code": "fr",
+      "label": "Français"
+    }
+  ],
+  "aliases": {},
+  "pages": [
+    {
+      "id": "cli",
+      "title": "Command line",
+      "description": "Inspect modules, select plugin IDs, generate wrappers and resume builds.",
+      "section": "Manual",
+      "parent": "overview",
+      "order": 20,
+      "revision": "1",
+      "locale": "en",
+      "html": "<h2 id=\"inspect\">Inspect capabilities<a class=\"heading-anchor\" href=\"#/en/cli/inspect\" aria-label=\"Link to Inspect capabilities\">#</a></h2><div class=\"code-block\"><div class=\"code-toolbar\"><span>sh</span><button type=\"button\" data-copy-code>Copy</button></div><pre><code class=\"language-bash\"><span class=\"code-line\" id=\"L1\" data-line=\"1\">cyclapbridge-cli capabilities</span><span class=\"code-line\" id=\"L2\" data-line=\"2\">cyclapbridge-cli inspect <span class=\"token parameter variable\">--from</span> jsfx <span class=\"token parameter variable\">--input</span> <span class=\"token string\">\"D:/Effects/Gain.jsfx\"</span></span></code></pre></div><p>Inspection executes the input plugin or script. Run it in the hosting environment you selected for foreign code. Capability availability describes integration directions, not a promise that every third-party plugin or target platform is compatible.</p>\n<h2 id=\"convert\">Generate a project<a class=\"heading-anchor\" href=\"#/en/cli/convert\" aria-label=\"Link to Generate a project\">#</a></h2><div class=\"code-block\"><div class=\"code-toolbar\"><span>sh</span><button type=\"button\" data-copy-code>Copy</button></div><pre><code class=\"language-bash\"><span class=\"code-line\" id=\"code-2-L1\" data-line=\"1\">cyclapbridge-cli convert <span class=\"token parameter variable\">--from</span> clap <span class=\"token parameter variable\">--to</span> lv2 <span class=\"token parameter variable\">--input</span> <span class=\"token string\">\"D:/Plugins/Gain.clap\"</span> <span class=\"token parameter variable\">--output</span> <span class=\"token string\">\"D:/Exports/Gain-LV2\"</span> <span class=\"token parameter variable\">--build</span></span><span class=\"code-line\" id=\"code-2-L2\" data-line=\"2\">cyclapbridge-cli convert <span class=\"token parameter variable\">--from</span> lv2 <span class=\"token parameter variable\">--to</span> clap <span class=\"token parameter variable\">--input</span> <span class=\"token string\">\"D:/Plugins/Gain.lv2\"</span> <span class=\"token parameter variable\">--output</span> <span class=\"token string\">\"D:/Exports/Gain-CLAP\"</span> <span class=\"token parameter variable\">--build</span></span><span class=\"code-line\" id=\"code-2-L3\" data-line=\"3\">cyclapbridge-cli convert <span class=\"token parameter variable\">--from</span> jsfx <span class=\"token parameter variable\">--to</span> vst3 <span class=\"token parameter variable\">--input</span> <span class=\"token string\">\"D:/Effects/Gain.jsfx\"</span> <span class=\"token parameter variable\">--resources</span> <span class=\"token string\">\"D:/Effects\"</span> <span class=\"token parameter variable\">--output</span> <span class=\"token string\">\"D:/Exports/Gain-VST3\"</span> <span class=\"token parameter variable\">--build</span></span></code></pre></div><p>The output must be a new directory. Without <code>--build</code>, the command only generates the project. <code>--resources</code> copies a root containing the input and imports/assets, preserving relative paths. The destination must be outside it. LV2 metadata generation loads the selected plugin during compilation.</p>\n<h2 id=\"selection\">Select a plugin<a class=\"heading-anchor\" href=\"#/en/cli/selection\" aria-label=\"Link to Select a plugin\">#</a></h2><p><code>--plugin-id</code> accepts a CLAP ID, LV2 URI or a VST3 class ID with 32 hexadecimal characters in native byte order. Without it, the first compatible plugin is selected. Wrapper identity depends on source format, input name and selection rather than the absolute machine path.</p>\n<h2 id=\"options\">Options and resumed builds<a class=\"heading-anchor\" href=\"#/en/cli/options\" aria-label=\"Link to Options and resumed builds\">#</a></h2><p>Use <code>--name</code> for the result name, <code>--backend-root</code> for installed sources and <code>--bundle-id</code> for Apple identity. <code>--au-sdk</code> selects AudioUnitSDK. Build overrides are <code>--cmake</code>, <code>--generator</code>, <code>--arch</code> and <code>--config</code>. AUv3 requires the Xcode generator on macOS; Windows cannot compile Apple frameworks.</p>\n<div class=\"code-block\"><div class=\"code-toolbar\"><span>sh</span><button type=\"button\" data-copy-code>Copy</button></div><pre><code class=\"language-bash\"><span class=\"code-line\" id=\"code-3-L1\" data-line=\"1\">cyclapbridge-cli build <span class=\"token parameter variable\">--project</span> <span class=\"token string\">\"D:/Exports/Gain-VST3\"</span></span></code></pre></div><p>This resumes a generated project. Retain its payload and notices. See <a href=\"#/en/distribution\">Distribution</a> before moving the built artifacts.</p>\n",
+      "text": "Inspect capabilities # sh Copy cyclapbridge-cli capabilities cyclapbridge-cli inspect --from jsfx --input \"D:/Effects/Gain.jsfx\" Inspection executes the input plugin or script. Run it in the hosting environment you selected for foreign code. Capability availability describes integration directions, not a promise that every third-party plugin or target platform is compatible. Generate a project # sh Copy cyclapbridge-cli convert --from clap --to lv2 --input \"D:/Plugins/Gain.clap\" --output \"D:/Exports/Gain-LV2\" --build cyclapbridge-cli convert --from lv2 --to clap --input \"D:/Plugins/Gain.lv2\" --output \"D:/Exports/Gain-CLAP\" --build cyclapbridge-cli convert --from jsfx --to vst3 --input \"D:/Effects/Gain.jsfx\" --resources \"D:/Effects\" --output \"D:/Exports/Gain-VST3\" --build The output must be a new directory. Without --build , the command only generates the project. --resources copies a root containing the input and imports/assets, preserving relative paths. The destination must be outside it. LV2 metadata generation loads the selected plugin during compilation. Select a plugin # --plugin-id accepts a CLAP ID, LV2 URI or a VST3 class ID with 32 hexadecimal characters in native byte order. Without it, the first compatible plugin is selected. Wrapper identity depends on source format, input name and selection rather than the absolute machine path. Options and resumed builds # Use --name for the result name, --backend-root for installed sources and --bundle-id for Apple identity. --au-sdk selects AudioUnitSDK. Build overrides are --cmake , --generator , --arch and --config . AUv3 requires the Xcode generator on macOS; Windows cannot compile Apple frameworks. sh Copy cyclapbridge-cli build --project \"D:/Exports/Gain-VST3\" This resumes a generated project. Retain its payload and notices. See Distribution before moving the built artifacts. cyclapbridge-cli capabilities cyclapbridge-cli inspect --from jsfx --input \"D:/Effects/Gain.jsfx\" cyclapbridge-cli convert --from clap --to lv2 --input \"D:/Plugins/Gain.clap\" --output \"D:/Exports/Gain-LV2\" --build cyclapbridge-cli convert --from lv2 --to clap --input \"D:/Plugins/Gain.lv2\" --output \"D:/Exports/Gain-CLAP\" --build cyclapbridge-cli convert --from jsfx --to vst3 --input \"D:/Effects/Gain.jsfx\" --resources \"D:/Effects\" --output \"D:/Exports/Gain-VST3\" --build cyclapbridge-cli build --project \"D:/Exports/Gain-VST3\"",
+      "headings": [
+        {
+          "id": "inspect",
+          "text": "Inspect capabilities",
+          "level": 2
+        },
+        {
+          "id": "convert",
+          "text": "Generate a project",
+          "level": 2
+        },
+        {
+          "id": "selection",
+          "text": "Select a plugin",
+          "level": 2
+        },
+        {
+          "id": "options",
+          "text": "Options and resumed builds",
+          "level": 2
+        }
+      ],
+      "anchors": [
+        "L1",
+        "L2",
+        "code-2-L1",
+        "code-2-L2",
+        "code-2-L3",
+        "code-3-L1"
+      ],
+      "languages": [
+        "bash"
+      ],
+      "code": "cyclapbridge-cli capabilities\ncyclapbridge-cli inspect --from jsfx --input \"D:/Effects/Gain.jsfx\"\ncyclapbridge-cli convert --from clap --to lv2 --input \"D:/Plugins/Gain.clap\" --output \"D:/Exports/Gain-LV2\" --build\ncyclapbridge-cli convert --from lv2 --to clap --input \"D:/Plugins/Gain.lv2\" --output \"D:/Exports/Gain-CLAP\" --build\ncyclapbridge-cli convert --from jsfx --to vst3 --input \"D:/Effects/Gain.jsfx\" --resources \"D:/Effects\" --output \"D:/Exports/Gain-VST3\" --build\ncyclapbridge-cli build --project \"D:/Exports/Gain-VST3\"",
+      "assets": [],
+      "links": [
+        "#/en/distribution"
+      ],
+      "kind": "guide"
+    },
+    {
+      "id": "distribution",
+      "title": "Distribute a wrapper or library",
+      "description": "Keep payloads, required resources and component notices together.",
+      "section": "Manual",
+      "parent": "overview",
+      "order": 60,
+      "revision": "1",
+      "locale": "en",
+      "html": "<h2 id=\"files\">Keep the complete result<a class=\"heading-anchor\" href=\"#/en/distribution/files\" aria-label=\"Link to Keep the complete result\">#</a></h2><p>Keep the wrapper with its <code>CyCLAPBridge-payload</code>, resources and <code>CyCLAPBridge-licenses</code>. Some bundle formats place these inside the bundle. Moving only the outer DLL/plugin can break loading. External banks, runtimes and publisher permissions remain applicable. CyCLAPBridge does not automatically install plugins.</p>\n<p>The installed static library includes notices in <code>share/CyCLAPBridge/licenses</code>, even with the source backend disabled. Distribute those notices with binaries incorporating the library. Keep the complete <code>Documentation</code> export when shipping the manual.</p>\n<h2 id=\"licenses\">Licenses<a class=\"heading-anchor\" href=\"#/en/distribution/licenses\" aria-label=\"Link to Licenses\">#</a></h2><p>Original CyCLAPBridge code is MIT. The pinned VST3 SDK 3.8.0 build 66 and its nested components are MIT; VST3 support does not impose GPL on this project. AudioUnitSDK and ysfx are Apache-2.0. LV2, Lilv, Serd, Sord, Sratom and Zix retain ISC notices. Embedded WDL/LICE, image/audio helpers and other components retain their separate terms.</p>\n<p>The generated EEL2 parser retains GPL-2.0-or-later with Bison-exception-2.2. This exception permits a larger work containing the parser skeleton to use separate terms in this application. Preserve the parser&#39;s notice. The root README license table and <code>THIRD_PARTY.md</code> index the retained full notices and exact revisions.</p>\n<p>The separate manual reader uses CyDoc under MIT. Its notices, and those for marked, PrismJS and esbuild used during generation, are in <code>DocData/licenses</code>.</p>\n<h2 id=\"payload\">Selected plugin rights<a class=\"heading-anchor\" href=\"#/en/distribution/payload\" aria-label=\"Link to Selected plugin rights\">#</a></h2><p>Wrapping does not grant redistribution rights or replace the selected plugin&#39;s license. A GPL payload may add distribution obligations; a proprietary payload retains its restrictions. Keep applicable copyright, attribution and license texts for every included resource or script.</p>\n",
+      "text": "Keep the complete result # Keep the wrapper with its CyCLAPBridge-payload , resources and CyCLAPBridge-licenses . Some bundle formats place these inside the bundle. Moving only the outer DLL/plugin can break loading. External banks, runtimes and publisher permissions remain applicable. CyCLAPBridge does not automatically install plugins. The installed static library includes notices in share/CyCLAPBridge/licenses , even with the source backend disabled. Distribute those notices with binaries incorporating the library. Keep the complete Documentation export when shipping the manual. Licenses # Original CyCLAPBridge code is MIT. The pinned VST3 SDK 3.8.0 build 66 and its nested components are MIT; VST3 support does not impose GPL on this project. AudioUnitSDK and ysfx are Apache-2.0. LV2, Lilv, Serd, Sord, Sratom and Zix retain ISC notices. Embedded WDL/LICE, image/audio helpers and other components retain their separate terms. The generated EEL2 parser retains GPL-2.0-or-later with Bison-exception-2.2. This exception permits a larger work containing the parser skeleton to use separate terms in this application. Preserve the parser's notice. The root README license table and THIRD_PARTY.md index the retained full notices and exact revisions. The separate manual reader uses CyDoc under MIT. Its notices, and those for marked, PrismJS and esbuild used during generation, are in DocData/licenses . Selected plugin rights # Wrapping does not grant redistribution rights or replace the selected plugin's license. A GPL payload may add distribution obligations; a proprietary payload retains its restrictions. Keep applicable copyright, attribution and license texts for every included resource or script.",
+      "headings": [
+        {
+          "id": "files",
+          "text": "Keep the complete result",
+          "level": 2
+        },
+        {
+          "id": "licenses",
+          "text": "Licenses",
+          "level": 2
+        },
+        {
+          "id": "payload",
+          "text": "Selected plugin rights",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [],
+      "kind": "guide"
+    },
+    {
+      "id": "editors",
+      "title": "Embed a plugin editor",
+      "description": "Own native parent windows, pump UI work and forward automation safely.",
+      "section": "Developer reference",
+      "parent": "library",
+      "order": 50,
+      "revision": "1",
+      "locale": "en",
+      "html": "<h2 id=\"parent\">Native parent ownership<a class=\"heading-anchor\" href=\"#/en/editors/parent\" aria-label=\"Link to Native parent ownership\">#</a></h2><p>The DAW owns the parent window. Editor calls and <code>pumpMainThread()</code> run on the instance&#39;s creator/UI thread; on macOS this must also be Cocoa&#39;s main thread. No SDK or GUI framework is required in public headers.</p>\n<p>Call <code>editorSupported(api)</code>, then <code>createEditor(api, callbacks)</code>. Query <code>editorSize()</code>, size the parent and attach it with <code>setEditorParent({api, nativeParent})</code>. Show it with <code>showEditor(true)</code>. If attachment fails, destroy the editor. Call <code>destroyEditor()</code> before destroying its parent or plugin.</p>\n<p><code>EditorCallbacks</code> holds a context pointer and noexcept callbacks for resize requests, parameter gestures and closure. Keep the context alive until editor destruction returns. A resize callback returns false when the DAW rejects a size. Optional methods expose resizing constraints, adjusted sizes and scale support; do not assume every plugin supports them.</p>\n<h2 id=\"automation\">Pump and automation<a class=\"heading-anchor\" href=\"#/en/editors/automation\" aria-label=\"Link to Pump and automation\">#</a></h2><p>Pump UI work about every 33 ms while open. This services CLAP timers, LV2 idle, JSFX graphics and parameter synchronization. Editor open/close can coexist with audio; preparation changes and save/restore remain stopped-audio control operations.</p>\n<p>UI parameter values are coalesced per parameter and merged at the start of the next audio block. A DAW event at frame zero wins over a pending UI value in the same block. CLAP output gestures use <code>EventKind::gestureBegin</code> and <code>gestureEnd</code>; they are not common-API audio inputs.</p>\n<p>The generated CLAP facade needs host <code>CLAP_EXT_TIMER_SUPPORT</code> for its editor. Its bounded gesture queue has 1023 usable entries; overflow requests a value rescan. Audio values remain coalesced. The DAW remains responsible for scheduling requested audio processing.</p>\n<h2 id=\"backends\">Backend boundaries<a class=\"heading-anchor\" href=\"#/en/editors/backends\" aria-label=\"Link to Backend boundaries\">#</a></h2><ul>\n<li>CLAP forwards a plugin-provided compatible embedded GUI.</li>\n<li>VST3 uses <code>IPlugView</code>/<code>IPlugFrame</code> on HWND; DPI support depends on the plugin.</li>\n<li>LV2 supports WindowsUI, scalar float controls and supported host features, not Gtk/Qt adaptation or UI Atom/patch.</li>\n<li>JSFX scripts with <code>@gfx</code> use ysfx/WDL/LICE on Windows, including mouse, keyboard and menus. Scripts without <code>@gfx</code> have no native editor; a DAW may display sliders. File-drop is unavailable.</li>\n<li>AU Cocoa editor sources are integrated but unvalidated on macOS. Non-Windows VST3/LV2/JSFX editors are not advertised.</li>\n</ul>\n<p>Plugins and scripts keep their own GUI dependencies, allocations, synchronization and file access. See <a href=\"#/en/formats\">Formats</a> and <a href=\"#/en/overview/process\">Process ownership</a>.</p>\n",
+      "text": "Native parent ownership # The DAW owns the parent window. Editor calls and pumpMainThread() run on the instance's creator/UI thread; on macOS this must also be Cocoa's main thread. No SDK or GUI framework is required in public headers. Call editorSupported(api) , then createEditor(api, callbacks) . Query editorSize() , size the parent and attach it with setEditorParent({api, nativeParent}) . Show it with showEditor(true) . If attachment fails, destroy the editor. Call destroyEditor() before destroying its parent or plugin. EditorCallbacks holds a context pointer and noexcept callbacks for resize requests, parameter gestures and closure. Keep the context alive until editor destruction returns. A resize callback returns false when the DAW rejects a size. Optional methods expose resizing constraints, adjusted sizes and scale support; do not assume every plugin supports them. Pump and automation # Pump UI work about every 33 ms while open. This services CLAP timers, LV2 idle, JSFX graphics and parameter synchronization. Editor open/close can coexist with audio; preparation changes and save/restore remain stopped-audio control operations. UI parameter values are coalesced per parameter and merged at the start of the next audio block. A DAW event at frame zero wins over a pending UI value in the same block. CLAP output gestures use EventKind::gestureBegin and gestureEnd ; they are not common-API audio inputs. The generated CLAP facade needs host CLAP_EXT_TIMER_SUPPORT for its editor. Its bounded gesture queue has 1023 usable entries; overflow requests a value rescan. Audio values remain coalesced. The DAW remains responsible for scheduling requested audio processing. Backend boundaries # CLAP forwards a plugin-provided compatible embedded GUI. VST3 uses IPlugView / IPlugFrame on HWND; DPI support depends on the plugin. LV2 supports WindowsUI, scalar float controls and supported host features, not Gtk/Qt adaptation or UI Atom/patch. JSFX scripts with @gfx use ysfx/WDL/LICE on Windows, including mouse, keyboard and menus. Scripts without @gfx have no native editor; a DAW may display sliders. File-drop is unavailable. AU Cocoa editor sources are integrated but unvalidated on macOS. Non-Windows VST3/LV2/JSFX editors are not advertised. Plugins and scripts keep their own GUI dependencies, allocations, synchronization and file access. See Formats and Process ownership .",
+      "headings": [
+        {
+          "id": "parent",
+          "text": "Native parent ownership",
+          "level": 2
+        },
+        {
+          "id": "automation",
+          "text": "Pump and automation",
+          "level": 2
+        },
+        {
+          "id": "backends",
+          "text": "Backend boundaries",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [
+        "#/en/formats",
+        "#/en/overview/process"
+      ],
+      "kind": "guide"
+    },
+    {
+      "id": "formats",
+      "title": "Formats and limitations",
+      "description": "Understand which input/output directions and native editors are represented.",
+      "section": "Manual",
+      "parent": "overview",
+      "order": 30,
+      "revision": "1",
+      "locale": "en",
+      "html": "<h2 id=\"matrix\">Conversion matrix<a class=\"heading-anchor\" href=\"#/en/formats/matrix\" aria-label=\"Link to Conversion matrix\">#</a></h2><table>\n<thead>\n<tr>\n<th>Format</th>\n<th>Input</th>\n<th>Output</th>\n<th>Platform boundary</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>CLAP</td>\n<td>Yes</td>\n<td>Yes</td>\n<td>Direct hosting and generated facades</td>\n</tr>\n<tr>\n<td>VST3</td>\n<td>Yes</td>\n<td>Yes</td>\n<td>Pinned MIT SDK; Windows hosting/editor path</td>\n</tr>\n<tr>\n<td>LV2</td>\n<td>Yes</td>\n<td>Yes</td>\n<td>Bundle metadata, audio, MIDI Atom and state</td>\n</tr>\n<tr>\n<td>JSFX</td>\n<td>Yes, EEL2 source</td>\n<td>No standalone script target</td>\n<td>ysfx runtime; Windows <code>@gfx</code></td>\n</tr>\n<tr>\n<td>AUv2</td>\n<td>Apple host adapter</td>\n<td>clap-wrapper</td>\n<td>macOS required; source integration unvalidated</td>\n</tr>\n<tr>\n<td>AUv3</td>\n<td>No arbitrary-file input</td>\n<td>Extension and container</td>\n<td>macOS/Xcode/signing required; unvalidated</td>\n</tr>\n</tbody></table>\n<p>Apple implementation is available in source, with native testing deferred because the owner has no Mac. Linux builds remain unvalidated. Studio itself is Windows-only. AAX has no input, output or SDK option.</p>\n<h2 id=\"jsfx\">JSFX<a class=\"heading-anchor\" href=\"#/en/formats/jsfx\" aria-label=\"Link to JSFX\">#</a></h2><p>JSFX is a script language. A normal JSFX script does not load native CLAP/VST3/LV2/AU plugins. Such an output would need a native REAPER extension; CyCLAPBridge rejects it. The pinned ysfx runtime handles up to 64 sliders and 64 channels. Preserve imports and resources. REAPER-specific functions may require facilities outside a standalone host.</p>\n<h2 id=\"common\">Shared audio and editor contract<a class=\"heading-anchor\" href=\"#/en/formats/common\" aria-label=\"Link to Shared audio and editor contract\">#</a></h2><p>The shared API represents float32 buses, parameter events, notes and MIDI 1 messages. VST3 values are normalized to [0,1]; other backends retain native units. Unrepresentable events are rejected or reported through <code>outputEventsDropped</code>. Float64, SysEx, MIDI 2, per-voice modulation and full transport translation are outside this contract.</p>\n<p>Embedded editors cover CLAP&#39;s native GUI, VST3 HWND, LV2 WindowsUI and JSFX <code>@gfx</code> on Windows. AU Cocoa is an unvalidated source integration. LV2 Gtk/Qt adaptation, UI Atom/patch, JSFX file-drop and non-Windows VST3/LV2/JSFX editors are outside current scope. See <a href=\"#/en/editors\">Editors</a>.</p>\n",
+      "text": "Conversion matrix # Format Input Output Platform boundary CLAP Yes Yes Direct hosting and generated facades VST3 Yes Yes Pinned MIT SDK; Windows hosting/editor path LV2 Yes Yes Bundle metadata, audio, MIDI Atom and state JSFX Yes, EEL2 source No standalone script target ysfx runtime; Windows @gfx AUv2 Apple host adapter clap-wrapper macOS required; source integration unvalidated AUv3 No arbitrary-file input Extension and container macOS/Xcode/signing required; unvalidated Apple implementation is available in source, with native testing deferred because the owner has no Mac. Linux builds remain unvalidated. Studio itself is Windows-only. AAX has no input, output or SDK option. JSFX # JSFX is a script language. A normal JSFX script does not load native CLAP/VST3/LV2/AU plugins. Such an output would need a native REAPER extension; CyCLAPBridge rejects it. The pinned ysfx runtime handles up to 64 sliders and 64 channels. Preserve imports and resources. REAPER-specific functions may require facilities outside a standalone host. Shared audio and editor contract # The shared API represents float32 buses, parameter events, notes and MIDI 1 messages. VST3 values are normalized to [0,1]; other backends retain native units. Unrepresentable events are rejected or reported through outputEventsDropped . Float64, SysEx, MIDI 2, per-voice modulation and full transport translation are outside this contract. Embedded editors cover CLAP's native GUI, VST3 HWND, LV2 WindowsUI and JSFX @gfx on Windows. AU Cocoa is an unvalidated source integration. LV2 Gtk/Qt adaptation, UI Atom/patch, JSFX file-drop and non-Windows VST3/LV2/JSFX editors are outside current scope. See Editors .",
+      "headings": [
+        {
+          "id": "matrix",
+          "text": "Conversion matrix",
+          "level": 2
+        },
+        {
+          "id": "jsfx",
+          "text": "JSFX",
+          "level": 2
+        },
+        {
+          "id": "common",
+          "text": "Shared audio and editor contract",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [
+        "#/en/editors"
+      ],
+      "kind": "guide"
+    },
+    {
+      "id": "library",
+      "title": "Integrate the library",
+      "description": "Link the static C++20 package and own the hosting lifecycle in a DAW.",
+      "section": "Developer reference",
+      "order": 40,
+      "revision": "1",
+      "locale": "en",
+      "html": "<h2 id=\"link\">Link the installed package<a class=\"heading-anchor\" href=\"#/en/library/link\" aria-label=\"Link to Link the installed package\">#</a></h2><div class=\"code-block\"><div class=\"code-toolbar\"><span>cmake</span><button type=\"button\" data-copy-code>Copy</button></div><pre><code class=\"language-cmake\"><span class=\"code-line\" id=\"L1\" data-line=\"1\"><span class=\"token keyword\">find_package</span><span class=\"token punctuation\">(</span>CyCLAPBridge <span class=\"token number\">0.2</span> CONFIG REQUIRED<span class=\"token punctuation\">)</span></span><span class=\"code-line\" id=\"L2\" data-line=\"2\"><span class=\"token keyword\">target_link_libraries</span><span class=\"token punctuation\">(</span>MyDaw <span class=\"token namespace\">PRIVATE</span> <span class=\"token inserted class-name\">CyCLAPBridge::CyCLAPBridge</span><span class=\"token punctuation\">)</span></span></code></pre></div><p>Select the installation prefix through <code>CMAKE_PREFIX_PATH</code>. Public headers are <code>cyclapbridge/Conversion.h</code>, <code>cyclapbridge/Plugin.h</code> and <code>cyclapbridge/Editor.h</code>; namespace <code>cybridge</code>. The package is static and keeps audio SDK headers private. It imports no audio device or GUI toolkit.</p>\n<h2 id=\"lifecycle\">Lifecycle and threads<a class=\"heading-anchor\" href=\"#/en/library/lifecycle\" aria-label=\"Link to Lifecycle and threads\">#</a></h2><p>Construct <code>HostedPlugin(Format, absolutePath, optionalPluginId)</code> on the creator/UI thread inside the DAW-selected process. Read <code>descriptor()</code>, <code>inputs()</code>, <code>outputs()</code> and <code>parameters()</code> before preparing. Allocate the DAW&#39;s planar buffers and event storage before starting audio.</p>\n<p>Call <code>prepare(sampleRate, maximumFrames, maximumEvents)</code> on the control thread. One serialized audio owner calls <code>start()</code>, repeated <code>process(ProcessBlock&amp;)</code>, then <code>stop()</code>. After audio stops, control code can call <code>release()</code>, change configuration or destroy the instance. Do not overlap processing with lifecycle or state operations.</p>\n<p><code>ProcessBlock</code> contains frame count, bus spans, input events and caller-owned output-event capacity. Check <code>ProcessStatus</code>, <code>outputEventCount</code> and <code>outputEventsDropped</code>. Its pointers/spans must remain valid for the call and local to the hosting process. Prepared adapter processing uses bounded storage; arbitrary foreign DLL/script code does not inherit this real-time guarantee.</p>\n<h2 id=\"state\">Requests and state<a class=\"heading-anchor\" href=\"#/en/library/state\" aria-label=\"Link to Requests and state\">#</a></h2><p>Call <code>pumpMainThread()</code> regularly on the creator thread and handle returned request flags. Restart/rescan requires a stopped/deactivated lifecycle as appropriate. For activated CLAP instances, <code>flushRequested</code> and <code>processRequested</code> ask the DAW to schedule audio work; the UI pump does not replace the audio owner.</p>\n<p><code>latencyFrames()</code> reports latency. <code>saveState(maximumBytes)</code> returns opaque bounded bytes; <code>loadState(span)</code> restores them with audio stopped. <code>HostedPlugin</code> includes pending UI values in its state envelope. Store that state as opaque data rather than interpreting its layout. <code>parameterValue(id, value)</code> is a creator/UI-thread query.</p>\n<h2 id=\"conversion\">Conversion API<a class=\"heading-anchor\" href=\"#/en/library/conversion\" aria-label=\"Link to Conversion API\">#</a></h2><p><code>backendFromRoot(path)</code> selects the retained conversion sources. Fill a <code>ConversionRequest</code>, then call <code>createConversionProject(request)</code> on a control/background thread. It returns <code>ConversionProject</code> and throws on invalid input, unsupported directions or I/O failure. It refuses existing destinations.</p>\n<p><code>buildConversionProject(project, options, logSink)</code> runs CMake directly without a command shell and returns <code>BuildResult</code>. Neither generation nor compilation belongs on the audio thread. The DAW supplies any process supervision or security boundary. See <a href=\"#/en/cli\">Command line</a> for corresponding options and <a href=\"#/en/editors\">Editors</a> for GUI ownership.</p>\n",
+      "text": "Link the installed package # cmake Copy find_package ( CyCLAPBridge 0.2 CONFIG REQUIRED ) target_link_libraries ( MyDaw PRIVATE CyCLAPBridge::CyCLAPBridge ) Select the installation prefix through CMAKE_PREFIX_PATH . Public headers are cyclapbridge/Conversion.h , cyclapbridge/Plugin.h and cyclapbridge/Editor.h ; namespace cybridge . The package is static and keeps audio SDK headers private. It imports no audio device or GUI toolkit. Lifecycle and threads # Construct HostedPlugin(Format, absolutePath, optionalPluginId) on the creator/UI thread inside the DAW-selected process. Read descriptor() , inputs() , outputs() and parameters() before preparing. Allocate the DAW's planar buffers and event storage before starting audio. Call prepare(sampleRate, maximumFrames, maximumEvents) on the control thread. One serialized audio owner calls start() , repeated process(ProcessBlock&) , then stop() . After audio stops, control code can call release() , change configuration or destroy the instance. Do not overlap processing with lifecycle or state operations. ProcessBlock contains frame count, bus spans, input events and caller-owned output-event capacity. Check ProcessStatus , outputEventCount and outputEventsDropped . Its pointers/spans must remain valid for the call and local to the hosting process. Prepared adapter processing uses bounded storage; arbitrary foreign DLL/script code does not inherit this real-time guarantee. Requests and state # Call pumpMainThread() regularly on the creator thread and handle returned request flags. Restart/rescan requires a stopped/deactivated lifecycle as appropriate. For activated CLAP instances, flushRequested and processRequested ask the DAW to schedule audio work; the UI pump does not replace the audio owner. latencyFrames() reports latency. saveState(maximumBytes) returns opaque bounded bytes; loadState(span) restores them with audio stopped. HostedPlugin includes pending UI values in its state envelope. Store that state as opaque data rather than interpreting its layout. parameterValue(id, value) is a creator/UI-thread query. Conversion API # backendFromRoot(path) selects the retained conversion sources. Fill a ConversionRequest , then call createConversionProject(request) on a control/background thread. It returns ConversionProject and throws on invalid input, unsupported directions or I/O failure. It refuses existing destinations. buildConversionProject(project, options, logSink) runs CMake directly without a command shell and returns BuildResult . Neither generation nor compilation belongs on the audio thread. The DAW supplies any process supervision or security boundary. See Command line for corresponding options and Editors for GUI ownership. find_package(CyCLAPBridge 0.2 CONFIG REQUIRED) target_link_libraries(MyDaw PRIVATE CyCLAPBridge::CyCLAPBridge)",
+      "headings": [
+        {
+          "id": "link",
+          "text": "Link the installed package",
+          "level": 2
+        },
+        {
+          "id": "lifecycle",
+          "text": "Lifecycle and threads",
+          "level": 2
+        },
+        {
+          "id": "state",
+          "text": "Requests and state",
+          "level": 2
+        },
+        {
+          "id": "conversion",
+          "text": "Conversion API",
+          "level": 2
+        }
+      ],
+      "anchors": [
+        "L1",
+        "L2"
+      ],
+      "languages": [
+        "cmake"
+      ],
+      "code": "find_package(CyCLAPBridge 0.2 CONFIG REQUIRED)\ntarget_link_libraries(MyDaw PRIVATE CyCLAPBridge::CyCLAPBridge)",
+      "assets": [],
+      "links": [
+        "#/en/cli",
+        "#/en/editors"
+      ],
+      "kind": "guide"
+    },
+    {
+      "id": "overview",
+      "title": "CyCLAPBridge",
+      "description": "Choose between creating a wrapper and integrating plugin hosting.",
+      "section": "Manual",
+      "order": 0,
+      "revision": "1",
+      "locale": "en",
+      "html": "<h2 id=\"getting-started\">Start here<a class=\"heading-anchor\" href=\"#/en/overview/getting-started\" aria-label=\"Link to Start here\">#</a></h2><p>CyCLAPBridge 0.2.0 is in development. It combines a static C++20 hosting library, a conversion CLI and a native Windows Studio. It is independent of other Cy projects and of third-party UI toolkits.</p>\n<p>For a plugin or script you want to use in another format, follow <a href=\"#/en/studio\">Create a wrapper</a>. For a DAW implementation, start with <a href=\"#/en/library\">Integrate the library</a>. The <a href=\"#/en/formats\">format matrix</a> explains the supported directions and their boundaries.</p>\n<h2 id=\"tools\">Open the tools<a class=\"heading-anchor\" href=\"#/en/overview/tools\" aria-label=\"Link to Open the tools\">#</a></h2><p>After building and installing the sources, run <code>bin/CyCLAPBridgeStudio.exe</code> or <code>bin/cyclapbridge-cli.exe</code> in the installation. Studio currently uses French labels. Press F1 or choose its help button to open this manual. Use the language selector for the complete French edition.</p>\n<p>The manual opens directly from <code>Documentation.html</code>; keep its <code>DocData</code> directory beside it. Search from the header or with Ctrl+K. The navigation tree groups tasks and reference pages. No Node.js runtime or web server is required for reading.</p>\n<h2 id=\"wrapper\">Understand the wrapper<a class=\"heading-anchor\" href=\"#/en/overview/wrapper\" aria-label=\"Link to Understand the wrapper\">#</a></h2><p>A wrapper adapts an API around an existing plugin binary or JSFX source. It keeps the original payload and its resources; it does not translate machine code or alter the payload&#39;s license. Keep the generated artifacts and notices together. See <a href=\"#/en/distribution\">Distribution</a>.</p>\n<h2 id=\"process\">Hosting process<a class=\"heading-anchor\" href=\"#/en/overview/process\" aria-label=\"Link to Hosting process\">#</a></h2><p>The DAW chooses the process, creates and supervises workers, transports audio/events through IPC, recovers after crashes and provides any security sandbox. CyCLAPBridge runs inside the chosen process; it does not create this isolation. Its C++ instances, handles and audio spans stay local to that process. Foreign plugins and scripts keep their own real-time behavior.</p>\n",
+      "text": "Start here # CyCLAPBridge 0.2.0 is in development. It combines a static C++20 hosting library, a conversion CLI and a native Windows Studio. It is independent of other Cy projects and of third-party UI toolkits. For a plugin or script you want to use in another format, follow Create a wrapper . For a DAW implementation, start with Integrate the library . The format matrix explains the supported directions and their boundaries. Open the tools # After building and installing the sources, run bin/CyCLAPBridgeStudio.exe or bin/cyclapbridge-cli.exe in the installation. Studio currently uses French labels. Press F1 or choose its help button to open this manual. Use the language selector for the complete French edition. The manual opens directly from Documentation.html ; keep its DocData directory beside it. Search from the header or with Ctrl+K. The navigation tree groups tasks and reference pages. No Node.js runtime or web server is required for reading. Understand the wrapper # A wrapper adapts an API around an existing plugin binary or JSFX source. It keeps the original payload and its resources; it does not translate machine code or alter the payload's license. Keep the generated artifacts and notices together. See Distribution . Hosting process # The DAW chooses the process, creates and supervises workers, transports audio/events through IPC, recovers after crashes and provides any security sandbox. CyCLAPBridge runs inside the chosen process; it does not create this isolation. Its C++ instances, handles and audio spans stay local to that process. Foreign plugins and scripts keep their own real-time behavior.",
+      "headings": [
+        {
+          "id": "getting-started",
+          "text": "Start here",
+          "level": 2
+        },
+        {
+          "id": "tools",
+          "text": "Open the tools",
+          "level": 2
+        },
+        {
+          "id": "wrapper",
+          "text": "Understand the wrapper",
+          "level": 2
+        },
+        {
+          "id": "process",
+          "text": "Hosting process",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [
+        "#/en/studio",
+        "#/en/library",
+        "#/en/formats",
+        "#/en/distribution"
+      ],
+      "kind": "guide"
+    },
+    {
+      "id": "studio",
+      "title": "Create a wrapper",
+      "description": "Select a source, preserve resources and build a new conversion project.",
+      "section": "Manual",
+      "parent": "overview",
+      "order": 10,
+      "revision": "1",
+      "locale": "en",
+      "html": "<h2 id=\"input\">Select the input<a class=\"heading-anchor\" href=\"#/en/studio/input\" aria-label=\"Link to Select the input\">#</a></h2><ol>\n<li>Open Studio and select the source format on the left and target format on the right.</li>\n<li>Use <strong>Fichier…</strong> for a plugin file or JSFX source, or <strong>Bundle…</strong> for an LV2/VST3/AU directory.</li>\n<li>Choose a new project directory and enter a wrapper name. Existing project directories are refused to avoid overwriting data.</li>\n<li>Keep the detected CyCLAPBridge component directory, or choose the installed directory containing <code>third_party</code> and <code>templates</code>.</li>\n</ol>\n<p>The Windows application can generate Apple projects, but compiling Audio Units needs macOS. Consult <a href=\"#/en/formats\">Formats</a> before selecting a direction.</p>\n<h2 id=\"resources\">Include resources<a class=\"heading-anchor\" href=\"#/en/studio/resources\" aria-label=\"Link to Include resources\">#</a></h2><p>The optional resource/import directory must contain the selected input and its associated files. Their relative paths are preserved. This is useful for JSFX imports, images and plugin resources. Choose a destination outside that source directory. Banks, external dependencies and publisher authorizations remain the plugin&#39;s responsibility.</p>\n<h2 id=\"build\">Generate and compile<a class=\"heading-anchor\" href=\"#/en/studio/build\" aria-label=\"Link to Generate and compile\">#</a></h2><p><strong>Créer le projet</strong> writes a CMake project without opening the input plugin. <strong>Créer et compiler</strong> also runs CMake and the compiler on a background thread; read the journal if it fails. For LV2 output, compilation runs a separate metadata helper that loads the plugin. This helper is not a security sandbox.</p>\n<p>After success, <strong>Ouvrir le résultat</strong> opens the artifacts directory. Keep the wrapper, its <code>CyCLAPBridge-payload</code> and <code>CyCLAPBridge-licenses</code> together. Nothing is automatically installed in a DAW&#39;s plugin folders. Follow the DAW&#39;s normal discovery procedure when installing the complete result.</p>\n<h2 id=\"selection\">Select a plugin inside a module<a class=\"heading-anchor\" href=\"#/en/studio/selection\" aria-label=\"Link to Select a plugin inside a module\">#</a></h2><p>Studio uses the first compatible plugin in a multi-plugin module. Use the <a href=\"#/en/cli/selection\">CLI</a> with <code>--plugin-id</code> when a specific ID or URI is needed. The CLI also exposes custom CMake generators, architecture, configuration and Apple bundle options.</p>\n",
+      "text": "Select the input # Open Studio and select the source format on the left and target format on the right. Use Fichier… for a plugin file or JSFX source, or Bundle… for an LV2/VST3/AU directory. Choose a new project directory and enter a wrapper name. Existing project directories are refused to avoid overwriting data. Keep the detected CyCLAPBridge component directory, or choose the installed directory containing third_party and templates . The Windows application can generate Apple projects, but compiling Audio Units needs macOS. Consult Formats before selecting a direction. Include resources # The optional resource/import directory must contain the selected input and its associated files. Their relative paths are preserved. This is useful for JSFX imports, images and plugin resources. Choose a destination outside that source directory. Banks, external dependencies and publisher authorizations remain the plugin's responsibility. Generate and compile # Créer le projet writes a CMake project without opening the input plugin. Créer et compiler also runs CMake and the compiler on a background thread; read the journal if it fails. For LV2 output, compilation runs a separate metadata helper that loads the plugin. This helper is not a security sandbox. After success, Ouvrir le résultat opens the artifacts directory. Keep the wrapper, its CyCLAPBridge-payload and CyCLAPBridge-licenses together. Nothing is automatically installed in a DAW's plugin folders. Follow the DAW's normal discovery procedure when installing the complete result. Select a plugin inside a module # Studio uses the first compatible plugin in a multi-plugin module. Use the CLI with --plugin-id when a specific ID or URI is needed. The CLI also exposes custom CMake generators, architecture, configuration and Apple bundle options.",
+      "headings": [
+        {
+          "id": "input",
+          "text": "Select the input",
+          "level": 2
+        },
+        {
+          "id": "resources",
+          "text": "Include resources",
+          "level": 2
+        },
+        {
+          "id": "build",
+          "text": "Generate and compile",
+          "level": 2
+        },
+        {
+          "id": "selection",
+          "text": "Select a plugin inside a module",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [
+        "#/en/formats",
+        "#/en/cli/selection"
+      ],
+      "kind": "guide"
+    },
+    {
+      "id": "cli",
+      "title": "Ligne de commande",
+      "description": "Inspecter les modules, choisir un ID, générer des wrappers et reprendre une compilation.",
+      "section": "Manuel",
+      "parent": "overview",
+      "order": 20,
+      "sourceRevision": "1",
+      "locale": "fr",
+      "html": "<h2 id=\"inspect\">Examiner les capacités<a class=\"heading-anchor\" href=\"#/fr/cli/inspect\" aria-label=\"Lien vers Examiner les capacités\">#</a></h2><div class=\"code-block\"><div class=\"code-toolbar\"><span>sh</span><button type=\"button\" data-copy-code>Copier</button></div><pre><code class=\"language-bash\"><span class=\"code-line\" id=\"L1\" data-line=\"1\">cyclapbridge-cli capabilities</span><span class=\"code-line\" id=\"L2\" data-line=\"2\">cyclapbridge-cli inspect <span class=\"token parameter variable\">--from</span> jsfx <span class=\"token parameter variable\">--input</span> <span class=\"token string\">\"D:/Effects/Gain.jsfx\"</span></span></code></pre></div><p>L’inspection exécute le plugin ou le script d’entrée. Lancer cette commande dans l’environnement d’hébergement choisi pour le code étranger. La disponibilité des capacités décrit les directions d’intégration, sans promettre la compatibilité de tous les plugins tiers ou de toutes les plateformes cibles.</p>\n<h2 id=\"convert\">Générer un projet<a class=\"heading-anchor\" href=\"#/fr/cli/convert\" aria-label=\"Lien vers Générer un projet\">#</a></h2><div class=\"code-block\"><div class=\"code-toolbar\"><span>sh</span><button type=\"button\" data-copy-code>Copier</button></div><pre><code class=\"language-bash\"><span class=\"code-line\" id=\"code-2-L1\" data-line=\"1\">cyclapbridge-cli convert <span class=\"token parameter variable\">--from</span> clap <span class=\"token parameter variable\">--to</span> lv2 <span class=\"token parameter variable\">--input</span> <span class=\"token string\">\"D:/Plugins/Gain.clap\"</span> <span class=\"token parameter variable\">--output</span> <span class=\"token string\">\"D:/Exports/Gain-LV2\"</span> <span class=\"token parameter variable\">--build</span></span><span class=\"code-line\" id=\"code-2-L2\" data-line=\"2\">cyclapbridge-cli convert <span class=\"token parameter variable\">--from</span> lv2 <span class=\"token parameter variable\">--to</span> clap <span class=\"token parameter variable\">--input</span> <span class=\"token string\">\"D:/Plugins/Gain.lv2\"</span> <span class=\"token parameter variable\">--output</span> <span class=\"token string\">\"D:/Exports/Gain-CLAP\"</span> <span class=\"token parameter variable\">--build</span></span><span class=\"code-line\" id=\"code-2-L3\" data-line=\"3\">cyclapbridge-cli convert <span class=\"token parameter variable\">--from</span> jsfx <span class=\"token parameter variable\">--to</span> vst3 <span class=\"token parameter variable\">--input</span> <span class=\"token string\">\"D:/Effects/Gain.jsfx\"</span> <span class=\"token parameter variable\">--resources</span> <span class=\"token string\">\"D:/Effects\"</span> <span class=\"token parameter variable\">--output</span> <span class=\"token string\">\"D:/Exports/Gain-VST3\"</span> <span class=\"token parameter variable\">--build</span></span></code></pre></div><p>La sortie doit être un nouveau dossier. Sans <code>--build</code>, la commande génère seulement le projet. <code>--resources</code> copie une racine contenant l’entrée et les imports/assets, en conservant les chemins relatifs. La destination doit être extérieure. La génération des métadonnées LV2 charge le plugin choisi pendant la compilation.</p>\n<h2 id=\"selection\">Choisir un plugin<a class=\"heading-anchor\" href=\"#/fr/cli/selection\" aria-label=\"Lien vers Choisir un plugin\">#</a></h2><p><code>--plugin-id</code> accepte un ID CLAP, une URI LV2 ou un ID de classe VST3 de 32 caractères hexadécimaux dans l’ordre natif des octets. Sans cette option, le premier plugin compatible est choisi. L’identité du wrapper dépend du format source, du nom d’entrée et de la sélection plutôt que du chemin absolu de la machine.</p>\n<h2 id=\"options\">Options et reprise de compilation<a class=\"heading-anchor\" href=\"#/fr/cli/options\" aria-label=\"Lien vers Options et reprise de compilation\">#</a></h2><p>Utiliser <code>--name</code> pour le nom du résultat, <code>--backend-root</code> pour les sources installées et <code>--bundle-id</code> pour l’identité Apple. <code>--au-sdk</code> sélectionne AudioUnitSDK. Les options de compilation sont <code>--cmake</code>, <code>--generator</code>, <code>--arch</code> et <code>--config</code>. AUv3 demande le générateur Xcode sous macOS ; Windows ne compile pas les frameworks Apple.</p>\n<div class=\"code-block\"><div class=\"code-toolbar\"><span>sh</span><button type=\"button\" data-copy-code>Copier</button></div><pre><code class=\"language-bash\"><span class=\"code-line\" id=\"code-3-L1\" data-line=\"1\">cyclapbridge-cli build <span class=\"token parameter variable\">--project</span> <span class=\"token string\">\"D:/Exports/Gain-VST3\"</span></span></code></pre></div><p>Cela reprend un projet généré. Conserver son payload et ses notices. Voir <a href=\"#/fr/distribution\">Distribution</a> avant de déplacer les artefacts compilés.</p>\n",
+      "text": "Examiner les capacités # sh Copier cyclapbridge-cli capabilities cyclapbridge-cli inspect --from jsfx --input \"D:/Effects/Gain.jsfx\" L’inspection exécute le plugin ou le script d’entrée. Lancer cette commande dans l’environnement d’hébergement choisi pour le code étranger. La disponibilité des capacités décrit les directions d’intégration, sans promettre la compatibilité de tous les plugins tiers ou de toutes les plateformes cibles. Générer un projet # sh Copier cyclapbridge-cli convert --from clap --to lv2 --input \"D:/Plugins/Gain.clap\" --output \"D:/Exports/Gain-LV2\" --build cyclapbridge-cli convert --from lv2 --to clap --input \"D:/Plugins/Gain.lv2\" --output \"D:/Exports/Gain-CLAP\" --build cyclapbridge-cli convert --from jsfx --to vst3 --input \"D:/Effects/Gain.jsfx\" --resources \"D:/Effects\" --output \"D:/Exports/Gain-VST3\" --build La sortie doit être un nouveau dossier. Sans --build , la commande génère seulement le projet. --resources copie une racine contenant l’entrée et les imports/assets, en conservant les chemins relatifs. La destination doit être extérieure. La génération des métadonnées LV2 charge le plugin choisi pendant la compilation. Choisir un plugin # --plugin-id accepte un ID CLAP, une URI LV2 ou un ID de classe VST3 de 32 caractères hexadécimaux dans l’ordre natif des octets. Sans cette option, le premier plugin compatible est choisi. L’identité du wrapper dépend du format source, du nom d’entrée et de la sélection plutôt que du chemin absolu de la machine. Options et reprise de compilation # Utiliser --name pour le nom du résultat, --backend-root pour les sources installées et --bundle-id pour l’identité Apple. --au-sdk sélectionne AudioUnitSDK. Les options de compilation sont --cmake , --generator , --arch et --config . AUv3 demande le générateur Xcode sous macOS ; Windows ne compile pas les frameworks Apple. sh Copier cyclapbridge-cli build --project \"D:/Exports/Gain-VST3\" Cela reprend un projet généré. Conserver son payload et ses notices. Voir Distribution avant de déplacer les artefacts compilés. cyclapbridge-cli capabilities cyclapbridge-cli inspect --from jsfx --input \"D:/Effects/Gain.jsfx\" cyclapbridge-cli convert --from clap --to lv2 --input \"D:/Plugins/Gain.clap\" --output \"D:/Exports/Gain-LV2\" --build cyclapbridge-cli convert --from lv2 --to clap --input \"D:/Plugins/Gain.lv2\" --output \"D:/Exports/Gain-CLAP\" --build cyclapbridge-cli convert --from jsfx --to vst3 --input \"D:/Effects/Gain.jsfx\" --resources \"D:/Effects\" --output \"D:/Exports/Gain-VST3\" --build cyclapbridge-cli build --project \"D:/Exports/Gain-VST3\"",
+      "headings": [
+        {
+          "id": "inspect",
+          "text": "Examiner les capacités",
+          "level": 2
+        },
+        {
+          "id": "convert",
+          "text": "Générer un projet",
+          "level": 2
+        },
+        {
+          "id": "selection",
+          "text": "Choisir un plugin",
+          "level": 2
+        },
+        {
+          "id": "options",
+          "text": "Options et reprise de compilation",
+          "level": 2
+        }
+      ],
+      "anchors": [
+        "L1",
+        "L2",
+        "code-2-L1",
+        "code-2-L2",
+        "code-2-L3",
+        "code-3-L1"
+      ],
+      "languages": [
+        "bash"
+      ],
+      "code": "cyclapbridge-cli capabilities\ncyclapbridge-cli inspect --from jsfx --input \"D:/Effects/Gain.jsfx\"\ncyclapbridge-cli convert --from clap --to lv2 --input \"D:/Plugins/Gain.clap\" --output \"D:/Exports/Gain-LV2\" --build\ncyclapbridge-cli convert --from lv2 --to clap --input \"D:/Plugins/Gain.lv2\" --output \"D:/Exports/Gain-CLAP\" --build\ncyclapbridge-cli convert --from jsfx --to vst3 --input \"D:/Effects/Gain.jsfx\" --resources \"D:/Effects\" --output \"D:/Exports/Gain-VST3\" --build\ncyclapbridge-cli build --project \"D:/Exports/Gain-VST3\"",
+      "assets": [],
+      "links": [
+        "#/fr/distribution"
+      ],
+      "kind": "guide",
+      "revision": "3e057e687d7f"
+    },
+    {
+      "id": "distribution",
+      "title": "Distribuer un wrapper ou la bibliothèque",
+      "description": "Garder ensemble payloads, ressources nécessaires et notices des composants.",
+      "section": "Manuel",
+      "parent": "overview",
+      "order": 60,
+      "sourceRevision": "1",
+      "locale": "fr",
+      "html": "<h2 id=\"files\">Conserver le résultat complet<a class=\"heading-anchor\" href=\"#/fr/distribution/files\" aria-label=\"Lien vers Conserver le résultat complet\">#</a></h2><p>Garder le wrapper avec son <code>CyCLAPBridge-payload</code>, ses ressources et ses <code>CyCLAPBridge-licenses</code>. Certains formats placent ces fichiers dans le bundle. Déplacer uniquement la DLL ou le plugin extérieur peut empêcher le chargement. Les banques externes, runtimes et permissions des éditeurs restent applicables. CyCLAPBridge n’installe pas automatiquement les plugins.</p>\n<p>La bibliothèque statique installée comprend les notices dans <code>share/CyCLAPBridge/licenses</code>, même avec le backend source désactivé. Distribuer ces notices avec les binaires qui intègrent la bibliothèque. Conserver l’export <code>Documentation</code> complet lors de la distribution du manuel.</p>\n<h2 id=\"licenses\">Licences<a class=\"heading-anchor\" href=\"#/fr/distribution/licenses\" aria-label=\"Lien vers Licences\">#</a></h2><p>Le code original de CyCLAPBridge est sous MIT. Le SDK VST3 3.8.0 build 66 épinglé et ses composants imbriqués sont sous MIT ; VST3 n’impose pas la GPL à ce projet. AudioUnitSDK et ysfx sont sous Apache-2.0. LV2, Lilv, Serd, Sord, Sratom et Zix conservent leurs notices ISC. WDL/LICE, les outils image/audio embarqués et les autres composants gardent leurs conditions distinctes.</p>\n<p>Le parseur EEL2 généré conserve GPL-2.0-or-later avec Bison-exception-2.2. Cette exception permet à un ensemble plus vaste contenant le squelette du parseur d’utiliser des conditions distinctes dans cette application. Conserver la notice du parseur. Le tableau des licences du README racine et <code>THIRD_PARTY.md</code> indexent les notices complètes conservées et les révisions exactes.</p>\n<p>Le lecteur de manuel distinct utilise CyDoc sous MIT. Ses notices, ainsi que celles de marked, PrismJS et esbuild utilisés à la génération, sont dans <code>DocData/licenses</code>.</p>\n<h2 id=\"payload\">Droits du plugin sélectionné<a class=\"heading-anchor\" href=\"#/fr/distribution/payload\" aria-label=\"Lien vers Droits du plugin sélectionné\">#</a></h2><p>Créer un wrapper ne donne aucun droit de redistribution et ne remplace pas la licence du plugin choisi. Un payload GPL peut ajouter des obligations de distribution ; un payload propriétaire conserve ses restrictions. Garder les copyrights, attributions et textes de licence applicables à chaque ressource ou script inclus.</p>\n",
+      "text": "Conserver le résultat complet # Garder le wrapper avec son CyCLAPBridge-payload , ses ressources et ses CyCLAPBridge-licenses . Certains formats placent ces fichiers dans le bundle. Déplacer uniquement la DLL ou le plugin extérieur peut empêcher le chargement. Les banques externes, runtimes et permissions des éditeurs restent applicables. CyCLAPBridge n’installe pas automatiquement les plugins. La bibliothèque statique installée comprend les notices dans share/CyCLAPBridge/licenses , même avec le backend source désactivé. Distribuer ces notices avec les binaires qui intègrent la bibliothèque. Conserver l’export Documentation complet lors de la distribution du manuel. Licences # Le code original de CyCLAPBridge est sous MIT. Le SDK VST3 3.8.0 build 66 épinglé et ses composants imbriqués sont sous MIT ; VST3 n’impose pas la GPL à ce projet. AudioUnitSDK et ysfx sont sous Apache-2.0. LV2, Lilv, Serd, Sord, Sratom et Zix conservent leurs notices ISC. WDL/LICE, les outils image/audio embarqués et les autres composants gardent leurs conditions distinctes. Le parseur EEL2 généré conserve GPL-2.0-or-later avec Bison-exception-2.2. Cette exception permet à un ensemble plus vaste contenant le squelette du parseur d’utiliser des conditions distinctes dans cette application. Conserver la notice du parseur. Le tableau des licences du README racine et THIRD_PARTY.md indexent les notices complètes conservées et les révisions exactes. Le lecteur de manuel distinct utilise CyDoc sous MIT. Ses notices, ainsi que celles de marked, PrismJS et esbuild utilisés à la génération, sont dans DocData/licenses . Droits du plugin sélectionné # Créer un wrapper ne donne aucun droit de redistribution et ne remplace pas la licence du plugin choisi. Un payload GPL peut ajouter des obligations de distribution ; un payload propriétaire conserve ses restrictions. Garder les copyrights, attributions et textes de licence applicables à chaque ressource ou script inclus.",
+      "headings": [
+        {
+          "id": "files",
+          "text": "Conserver le résultat complet",
+          "level": 2
+        },
+        {
+          "id": "licenses",
+          "text": "Licences",
+          "level": 2
+        },
+        {
+          "id": "payload",
+          "text": "Droits du plugin sélectionné",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [],
+      "kind": "guide",
+      "revision": "92baf718dccf"
+    },
+    {
+      "id": "editors",
+      "title": "Embarquer un éditeur de plugin",
+      "description": "Posséder les fenêtres parentes natives, traiter le travail UI et relayer l’automation.",
+      "section": "Référence développeur",
+      "parent": "library",
+      "order": 50,
+      "sourceRevision": "1",
+      "locale": "fr",
+      "html": "<h2 id=\"parent\">Propriété du parent natif<a class=\"heading-anchor\" href=\"#/fr/editors/parent\" aria-label=\"Lien vers Propriété du parent natif\">#</a></h2><p>Le DAW possède la fenêtre parente. Les appels d’éditeur et <code>pumpMainThread()</code> s’exécutent sur le thread créateur/UI de l’instance ; sous macOS, il doit aussi être le thread principal Cocoa. Aucun SDK ni framework graphique n’est requis dans les en-têtes publics.</p>\n<p>Appeler <code>editorSupported(api)</code>, puis <code>createEditor(api, callbacks)</code>. Interroger <code>editorSize()</code>, dimensionner le parent et l’attacher avec <code>setEditorParent({api, nativeParent})</code>. L’afficher avec <code>showEditor(true)</code>. Si l’attachement échoue, détruire l’éditeur. Appeler <code>destroyEditor()</code> avant de détruire son parent ou son plugin.</p>\n<p><code>EditorCallbacks</code> contient un pointeur de contexte et des callbacks noexcept pour les demandes de taille, les gestes de paramètres et la fermeture. Garder le contexte valide jusqu’au retour de destruction de l’éditeur. Le callback de taille renvoie false si le DAW refuse la dimension. Des méthodes facultatives exposent contraintes, tailles ajustées et prise en charge de l’échelle ; ne pas supposer que chaque plugin les accepte.</p>\n<h2 id=\"automation\">Pump et automation<a class=\"heading-anchor\" href=\"#/fr/editors/automation\" aria-label=\"Lien vers Pump et automation\">#</a></h2><p>Traiter le travail UI environ toutes les 33 ms tant que l’éditeur est ouvert. Cela sert les timers CLAP, l’idle LV2, les graphismes JSFX et la synchronisation des paramètres. L’ouverture/fermeture peut coexister avec l’audio ; préparation et sauvegarde/restauration restent des opérations de contrôle avec l’audio arrêté.</p>\n<p>Les valeurs UI sont coalescées par paramètre et fusionnées au début du bloc audio suivant. Un événement du DAW à la frame zéro prend le pas sur une valeur UI en attente du même bloc. Les gestes CLAP en sortie utilisent <code>EventKind::gestureBegin</code> et <code>gestureEnd</code> ; ils ne sont pas des entrées audio de l’API commune.</p>\n<p>La façade CLAP générée demande <code>CLAP_EXT_TIMER_SUPPORT</code> à l’hôte pour son éditeur. Sa file bornée de gestes contient 1023 entrées utilisables ; un débordement demande un rescan des valeurs. Les valeurs audio restent coalescées. Le DAW planifie toujours le traitement audio demandé.</p>\n<h2 id=\"backends\">Limites des backends<a class=\"heading-anchor\" href=\"#/fr/editors/backends\" aria-label=\"Lien vers Limites des backends\">#</a></h2><ul>\n<li>CLAP relaie la GUI embarquée compatible fournie par le plugin.</li>\n<li>VST3 utilise <code>IPlugView</code>/<code>IPlugFrame</code> sur HWND ; le support DPI dépend du plugin.</li>\n<li>LV2 prend en charge WindowsUI, les contrôles float et les fonctions hôte acceptées, sans adaptation Gtk/Qt ni UI Atom/patch.</li>\n<li>Les scripts JSFX avec <code>@gfx</code> utilisent ysfx/WDL/LICE sous Windows, avec souris, clavier et menus. Sans <code>@gfx</code>, aucun éditeur natif n’est fourni ; le DAW peut afficher les sliders. Le dépôt de fichiers est indisponible.</li>\n<li>Les sources de l’éditeur AU Cocoa sont intégrées, sans validation macOS. Les éditeurs VST3/LV2/JSFX hors Windows ne sont pas annoncés.</li>\n</ul>\n<p>Les plugins et scripts conservent leurs dépendances GUI, allocations, synchronisations et accès aux fichiers. Voir <a href=\"#/fr/formats\">Formats</a> et <a href=\"#/fr/overview/process\">Propriété des processus</a>.</p>\n",
+      "text": "Propriété du parent natif # Le DAW possède la fenêtre parente. Les appels d’éditeur et pumpMainThread() s’exécutent sur le thread créateur/UI de l’instance ; sous macOS, il doit aussi être le thread principal Cocoa. Aucun SDK ni framework graphique n’est requis dans les en-têtes publics. Appeler editorSupported(api) , puis createEditor(api, callbacks) . Interroger editorSize() , dimensionner le parent et l’attacher avec setEditorParent({api, nativeParent}) . L’afficher avec showEditor(true) . Si l’attachement échoue, détruire l’éditeur. Appeler destroyEditor() avant de détruire son parent ou son plugin. EditorCallbacks contient un pointeur de contexte et des callbacks noexcept pour les demandes de taille, les gestes de paramètres et la fermeture. Garder le contexte valide jusqu’au retour de destruction de l’éditeur. Le callback de taille renvoie false si le DAW refuse la dimension. Des méthodes facultatives exposent contraintes, tailles ajustées et prise en charge de l’échelle ; ne pas supposer que chaque plugin les accepte. Pump et automation # Traiter le travail UI environ toutes les 33 ms tant que l’éditeur est ouvert. Cela sert les timers CLAP, l’idle LV2, les graphismes JSFX et la synchronisation des paramètres. L’ouverture/fermeture peut coexister avec l’audio ; préparation et sauvegarde/restauration restent des opérations de contrôle avec l’audio arrêté. Les valeurs UI sont coalescées par paramètre et fusionnées au début du bloc audio suivant. Un événement du DAW à la frame zéro prend le pas sur une valeur UI en attente du même bloc. Les gestes CLAP en sortie utilisent EventKind::gestureBegin et gestureEnd ; ils ne sont pas des entrées audio de l’API commune. La façade CLAP générée demande CLAP_EXT_TIMER_SUPPORT à l’hôte pour son éditeur. Sa file bornée de gestes contient 1023 entrées utilisables ; un débordement demande un rescan des valeurs. Les valeurs audio restent coalescées. Le DAW planifie toujours le traitement audio demandé. Limites des backends # CLAP relaie la GUI embarquée compatible fournie par le plugin. VST3 utilise IPlugView / IPlugFrame sur HWND ; le support DPI dépend du plugin. LV2 prend en charge WindowsUI, les contrôles float et les fonctions hôte acceptées, sans adaptation Gtk/Qt ni UI Atom/patch. Les scripts JSFX avec @gfx utilisent ysfx/WDL/LICE sous Windows, avec souris, clavier et menus. Sans @gfx , aucun éditeur natif n’est fourni ; le DAW peut afficher les sliders. Le dépôt de fichiers est indisponible. Les sources de l’éditeur AU Cocoa sont intégrées, sans validation macOS. Les éditeurs VST3/LV2/JSFX hors Windows ne sont pas annoncés. Les plugins et scripts conservent leurs dépendances GUI, allocations, synchronisations et accès aux fichiers. Voir Formats et Propriété des processus .",
+      "headings": [
+        {
+          "id": "parent",
+          "text": "Propriété du parent natif",
+          "level": 2
+        },
+        {
+          "id": "automation",
+          "text": "Pump et automation",
+          "level": 2
+        },
+        {
+          "id": "backends",
+          "text": "Limites des backends",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [
+        "#/fr/formats",
+        "#/fr/overview/process"
+      ],
+      "kind": "guide",
+      "revision": "549c4490ec87"
+    },
+    {
+      "id": "formats",
+      "title": "Formats et limites",
+      "description": "Comprendre les directions d’entrée/sortie et les éditeurs natifs représentés.",
+      "section": "Manuel",
+      "parent": "overview",
+      "order": 30,
+      "sourceRevision": "1",
+      "locale": "fr",
+      "html": "<h2 id=\"matrix\">Matrice de conversion<a class=\"heading-anchor\" href=\"#/fr/formats/matrix\" aria-label=\"Lien vers Matrice de conversion\">#</a></h2><table>\n<thead>\n<tr>\n<th>Format</th>\n<th>Entrée</th>\n<th>Sortie</th>\n<th>Limite de plateforme</th>\n</tr>\n</thead>\n<tbody><tr>\n<td>CLAP</td>\n<td>Oui</td>\n<td>Oui</td>\n<td>Hébergement direct et façades générées</td>\n</tr>\n<tr>\n<td>VST3</td>\n<td>Oui</td>\n<td>Oui</td>\n<td>SDK MIT épinglé ; chemin hôte/éditeur Windows</td>\n</tr>\n<tr>\n<td>LV2</td>\n<td>Oui</td>\n<td>Oui</td>\n<td>Métadonnées du bundle, audio, MIDI Atom et état</td>\n</tr>\n<tr>\n<td>JSFX</td>\n<td>Oui, source EEL2</td>\n<td>Pas de cible script autonome</td>\n<td>Runtime ysfx ; <code>@gfx</code> Windows</td>\n</tr>\n<tr>\n<td>AUv2</td>\n<td>Adaptateur hôte Apple</td>\n<td>clap-wrapper</td>\n<td>macOS requis ; intégration source non validée</td>\n</tr>\n<tr>\n<td>AUv3</td>\n<td>Pas d’entrée de fichier arbitraire</td>\n<td>Extension et conteneur</td>\n<td>macOS/Xcode/signature requis ; non validé</td>\n</tr>\n</tbody></table>\n<p>L’implémentation Apple est disponible dans les sources ; les tests natifs sont reportés car le propriétaire n’a pas de Mac. Les compilations Linux restent non validées. Studio est réservé à Windows. AAX ne possède aucune option d’entrée, de sortie ou de SDK.</p>\n<h2 id=\"jsfx\">JSFX<a class=\"heading-anchor\" href=\"#/fr/formats/jsfx\" aria-label=\"Lien vers JSFX\">#</a></h2><p>JSFX est un langage de scripts. Un script JSFX ordinaire ne charge pas de plugins natifs CLAP/VST3/LV2/AU. Une telle sortie demanderait une extension native REAPER ; CyCLAPBridge la refuse. Le runtime ysfx épinglé gère jusqu’à 64 sliders et 64 canaux. Conserver imports et ressources. Les fonctions propres à REAPER peuvent demander des services extérieurs à un hôte autonome.</p>\n<h2 id=\"common\">Contrat commun audio et éditeur<a class=\"heading-anchor\" href=\"#/fr/formats/common\" aria-label=\"Lien vers Contrat commun audio et éditeur\">#</a></h2><p>L’API commune représente les bus float32, les événements de paramètres, les notes et les messages MIDI 1. Les valeurs VST3 sont normalisées dans [0,1] ; les autres backends conservent leurs unités natives. Les événements non représentables sont refusés ou signalés par <code>outputEventsDropped</code>. Float64, SysEx, MIDI 2, modulation par voix et traduction complète du transport sont hors de ce contrat.</p>\n<p>Les éditeurs embarqués couvrent la GUI native CLAP, VST3 HWND, LV2 WindowsUI et JSFX <code>@gfx</code> sous Windows. AU Cocoa est une intégration source non validée. L’adaptation LV2 Gtk/Qt, UI Atom/patch, le dépôt de fichiers JSFX et les éditeurs VST3/LV2/JSFX hors Windows restent hors du périmètre actuel. Voir <a href=\"#/fr/editors\">Éditeurs</a>.</p>\n",
+      "text": "Matrice de conversion # Format Entrée Sortie Limite de plateforme CLAP Oui Oui Hébergement direct et façades générées VST3 Oui Oui SDK MIT épinglé ; chemin hôte/éditeur Windows LV2 Oui Oui Métadonnées du bundle, audio, MIDI Atom et état JSFX Oui, source EEL2 Pas de cible script autonome Runtime ysfx ; @gfx Windows AUv2 Adaptateur hôte Apple clap-wrapper macOS requis ; intégration source non validée AUv3 Pas d’entrée de fichier arbitraire Extension et conteneur macOS/Xcode/signature requis ; non validé L’implémentation Apple est disponible dans les sources ; les tests natifs sont reportés car le propriétaire n’a pas de Mac. Les compilations Linux restent non validées. Studio est réservé à Windows. AAX ne possède aucune option d’entrée, de sortie ou de SDK. JSFX # JSFX est un langage de scripts. Un script JSFX ordinaire ne charge pas de plugins natifs CLAP/VST3/LV2/AU. Une telle sortie demanderait une extension native REAPER ; CyCLAPBridge la refuse. Le runtime ysfx épinglé gère jusqu’à 64 sliders et 64 canaux. Conserver imports et ressources. Les fonctions propres à REAPER peuvent demander des services extérieurs à un hôte autonome. Contrat commun audio et éditeur # L’API commune représente les bus float32, les événements de paramètres, les notes et les messages MIDI 1. Les valeurs VST3 sont normalisées dans [0,1] ; les autres backends conservent leurs unités natives. Les événements non représentables sont refusés ou signalés par outputEventsDropped . Float64, SysEx, MIDI 2, modulation par voix et traduction complète du transport sont hors de ce contrat. Les éditeurs embarqués couvrent la GUI native CLAP, VST3 HWND, LV2 WindowsUI et JSFX @gfx sous Windows. AU Cocoa est une intégration source non validée. L’adaptation LV2 Gtk/Qt, UI Atom/patch, le dépôt de fichiers JSFX et les éditeurs VST3/LV2/JSFX hors Windows restent hors du périmètre actuel. Voir Éditeurs .",
+      "headings": [
+        {
+          "id": "matrix",
+          "text": "Matrice de conversion",
+          "level": 2
+        },
+        {
+          "id": "jsfx",
+          "text": "JSFX",
+          "level": 2
+        },
+        {
+          "id": "common",
+          "text": "Contrat commun audio et éditeur",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [
+        "#/fr/editors"
+      ],
+      "kind": "guide",
+      "revision": "241455ebeb97"
+    },
+    {
+      "id": "library",
+      "title": "Intégrer la bibliothèque",
+      "description": "Lier le paquet statique C++20 et gérer le cycle d’hébergement dans un DAW.",
+      "section": "Référence développeur",
+      "order": 40,
+      "sourceRevision": "1",
+      "locale": "fr",
+      "html": "<h2 id=\"link\">Lier le paquet installé<a class=\"heading-anchor\" href=\"#/fr/library/link\" aria-label=\"Lien vers Lier le paquet installé\">#</a></h2><div class=\"code-block\"><div class=\"code-toolbar\"><span>cmake</span><button type=\"button\" data-copy-code>Copier</button></div><pre><code class=\"language-cmake\"><span class=\"code-line\" id=\"L1\" data-line=\"1\"><span class=\"token keyword\">find_package</span><span class=\"token punctuation\">(</span>CyCLAPBridge <span class=\"token number\">0.2</span> CONFIG REQUIRED<span class=\"token punctuation\">)</span></span><span class=\"code-line\" id=\"L2\" data-line=\"2\"><span class=\"token keyword\">target_link_libraries</span><span class=\"token punctuation\">(</span>MyDaw <span class=\"token namespace\">PRIVATE</span> <span class=\"token inserted class-name\">CyCLAPBridge::CyCLAPBridge</span><span class=\"token punctuation\">)</span></span></code></pre></div><p>Sélectionner le préfixe d’installation avec <code>CMAKE_PREFIX_PATH</code>. Les en-têtes publics sont <code>cyclapbridge/Conversion.h</code>, <code>cyclapbridge/Plugin.h</code> et <code>cyclapbridge/Editor.h</code> ; espace de noms <code>cybridge</code>. Le paquet est statique et garde les SDK audio privés. Il n’importe ni périphérique audio ni toolkit graphique.</p>\n<h2 id=\"lifecycle\">Cycle de vie et threads<a class=\"heading-anchor\" href=\"#/fr/library/lifecycle\" aria-label=\"Lien vers Cycle de vie et threads\">#</a></h2><p>Construire <code>HostedPlugin(Format, absolutePath, optionalPluginId)</code> sur le thread créateur/UI dans le processus choisi par le DAW. Lire <code>descriptor()</code>, <code>inputs()</code>, <code>outputs()</code> et <code>parameters()</code> avant la préparation. Allouer les buffers planaires et le stockage d’événements du DAW avant de démarrer l’audio.</p>\n<p>Appeler <code>prepare(sampleRate, maximumFrames, maximumEvents)</code> sur le thread de contrôle. Un propriétaire audio unique et sérialisé appelle <code>start()</code>, les appels répétés à <code>process(ProcessBlock&amp;)</code>, puis <code>stop()</code>. Une fois l’audio arrêté, le contrôle peut appeler <code>release()</code>, changer la configuration ou détruire l’instance. Ne pas faire chevaucher traitement, cycle de vie ou opérations d’état.</p>\n<p><code>ProcessBlock</code> contient le nombre de frames, les spans de bus, les événements d’entrée et une capacité d’événements de sortie appartenant à l’appelant. Vérifier <code>ProcessStatus</code>, <code>outputEventCount</code> et <code>outputEventsDropped</code>. Ses pointeurs/spans doivent rester valides pendant l’appel et locaux au processus d’hébergement. Le traitement préparé de l’adaptateur utilise un stockage borné ; le code arbitraire des DLL/scripts étrangers ne reçoit pas cette garantie temps réel.</p>\n<h2 id=\"state\">Requêtes et état<a class=\"heading-anchor\" href=\"#/fr/library/state\" aria-label=\"Lien vers Requêtes et état\">#</a></h2><p>Appeler régulièrement <code>pumpMainThread()</code> sur le thread créateur et traiter les indicateurs retournés. Le redémarrage/rescan demande un cycle arrêté/désactivé selon le cas. Pour les instances CLAP activées, <code>flushRequested</code> et <code>processRequested</code> demandent au DAW de planifier le travail audio ; le pump UI ne remplace pas le propriétaire audio.</p>\n<p><code>latencyFrames()</code> indique la latence. <code>saveState(maximumBytes)</code> renvoie des octets opaques bornés ; <code>loadState(span)</code> les restaure avec l’audio arrêté. <code>HostedPlugin</code> inclut les valeurs UI en attente dans son enveloppe d’état. Conserver cet état comme des données opaques au lieu d’en interpréter la disposition. <code>parameterValue(id, value)</code> est une requête du thread créateur/UI.</p>\n<h2 id=\"conversion\">API de conversion<a class=\"heading-anchor\" href=\"#/fr/library/conversion\" aria-label=\"Lien vers API de conversion\">#</a></h2><p><code>backendFromRoot(path)</code> sélectionne les sources de conversion conservées. Remplir une <code>ConversionRequest</code>, puis appeler <code>createConversionProject(request)</code> sur un thread de contrôle/fond. Le résultat est un <code>ConversionProject</code> ; une entrée invalide, une direction non prise en charge ou une erreur d’E/S lève une exception. Les destinations existantes sont refusées.</p>\n<p><code>buildConversionProject(project, options, logSink)</code> lance CMake directement sans shell et renvoie un <code>BuildResult</code>. Génération et compilation restent hors du thread audio. Le DAW fournit la supervision des processus ou la frontière de sécurité. Voir <a href=\"#/fr/cli\">Ligne de commande</a> pour les options correspondantes et <a href=\"#/fr/editors\">Éditeurs</a> pour la propriété des GUI.</p>\n",
+      "text": "Lier le paquet installé # cmake Copier find_package ( CyCLAPBridge 0.2 CONFIG REQUIRED ) target_link_libraries ( MyDaw PRIVATE CyCLAPBridge::CyCLAPBridge ) Sélectionner le préfixe d’installation avec CMAKE_PREFIX_PATH . Les en-têtes publics sont cyclapbridge/Conversion.h , cyclapbridge/Plugin.h et cyclapbridge/Editor.h ; espace de noms cybridge . Le paquet est statique et garde les SDK audio privés. Il n’importe ni périphérique audio ni toolkit graphique. Cycle de vie et threads # Construire HostedPlugin(Format, absolutePath, optionalPluginId) sur le thread créateur/UI dans le processus choisi par le DAW. Lire descriptor() , inputs() , outputs() et parameters() avant la préparation. Allouer les buffers planaires et le stockage d’événements du DAW avant de démarrer l’audio. Appeler prepare(sampleRate, maximumFrames, maximumEvents) sur le thread de contrôle. Un propriétaire audio unique et sérialisé appelle start() , les appels répétés à process(ProcessBlock&) , puis stop() . Une fois l’audio arrêté, le contrôle peut appeler release() , changer la configuration ou détruire l’instance. Ne pas faire chevaucher traitement, cycle de vie ou opérations d’état. ProcessBlock contient le nombre de frames, les spans de bus, les événements d’entrée et une capacité d’événements de sortie appartenant à l’appelant. Vérifier ProcessStatus , outputEventCount et outputEventsDropped . Ses pointeurs/spans doivent rester valides pendant l’appel et locaux au processus d’hébergement. Le traitement préparé de l’adaptateur utilise un stockage borné ; le code arbitraire des DLL/scripts étrangers ne reçoit pas cette garantie temps réel. Requêtes et état # Appeler régulièrement pumpMainThread() sur le thread créateur et traiter les indicateurs retournés. Le redémarrage/rescan demande un cycle arrêté/désactivé selon le cas. Pour les instances CLAP activées, flushRequested et processRequested demandent au DAW de planifier le travail audio ; le pump UI ne remplace pas le propriétaire audio. latencyFrames() indique la latence. saveState(maximumBytes) renvoie des octets opaques bornés ; loadState(span) les restaure avec l’audio arrêté. HostedPlugin inclut les valeurs UI en attente dans son enveloppe d’état. Conserver cet état comme des données opaques au lieu d’en interpréter la disposition. parameterValue(id, value) est une requête du thread créateur/UI. API de conversion # backendFromRoot(path) sélectionne les sources de conversion conservées. Remplir une ConversionRequest , puis appeler createConversionProject(request) sur un thread de contrôle/fond. Le résultat est un ConversionProject ; une entrée invalide, une direction non prise en charge ou une erreur d’E/S lève une exception. Les destinations existantes sont refusées. buildConversionProject(project, options, logSink) lance CMake directement sans shell et renvoie un BuildResult . Génération et compilation restent hors du thread audio. Le DAW fournit la supervision des processus ou la frontière de sécurité. Voir Ligne de commande pour les options correspondantes et Éditeurs pour la propriété des GUI. find_package(CyCLAPBridge 0.2 CONFIG REQUIRED) target_link_libraries(MyDaw PRIVATE CyCLAPBridge::CyCLAPBridge)",
+      "headings": [
+        {
+          "id": "link",
+          "text": "Lier le paquet installé",
+          "level": 2
+        },
+        {
+          "id": "lifecycle",
+          "text": "Cycle de vie et threads",
+          "level": 2
+        },
+        {
+          "id": "state",
+          "text": "Requêtes et état",
+          "level": 2
+        },
+        {
+          "id": "conversion",
+          "text": "API de conversion",
+          "level": 2
+        }
+      ],
+      "anchors": [
+        "L1",
+        "L2"
+      ],
+      "languages": [
+        "cmake"
+      ],
+      "code": "find_package(CyCLAPBridge 0.2 CONFIG REQUIRED)\ntarget_link_libraries(MyDaw PRIVATE CyCLAPBridge::CyCLAPBridge)",
+      "assets": [],
+      "links": [
+        "#/fr/cli",
+        "#/fr/editors"
+      ],
+      "kind": "guide",
+      "revision": "bfb1d680fac9"
+    },
+    {
+      "id": "overview",
+      "title": "CyCLAPBridge",
+      "description": "Choisir entre créer un wrapper et intégrer un hôte de plugins.",
+      "section": "Manuel",
+      "order": 0,
+      "sourceRevision": "1",
+      "locale": "fr",
+      "html": "<h2 id=\"getting-started\">Commencer<a class=\"heading-anchor\" href=\"#/fr/overview/getting-started\" aria-label=\"Lien vers Commencer\">#</a></h2><p>CyCLAPBridge 0.2.0 est en développement. Il réunit une bibliothèque statique C++20 d’hébergement, une CLI de conversion et un Studio Windows natif. Il est indépendant des autres projets Cy et des toolkits graphiques tiers.</p>\n<p>Pour utiliser un plugin ou un script dans un autre format, suivre <a href=\"#/fr/studio\">Créer un wrapper</a>. Pour réaliser un DAW, commencer par <a href=\"#/fr/library\">Intégrer la bibliothèque</a>. La <a href=\"#/fr/formats\">matrice des formats</a> explique les directions prises en charge et leurs limites.</p>\n<h2 id=\"tools\">Ouvrir les outils<a class=\"heading-anchor\" href=\"#/fr/overview/tools\" aria-label=\"Lien vers Ouvrir les outils\">#</a></h2><p>Après compilation et installation des sources, lancer <code>bin/CyCLAPBridgeStudio.exe</code> ou <code>bin/cyclapbridge-cli.exe</code> dans l’installation. Les libellés de Studio sont actuellement en français. Appuyer sur F1 ou choisir son bouton d’aide pour ouvrir ce manuel. Le sélecteur de langue donne accès à l’édition anglaise complète.</p>\n<p>Le manuel s’ouvre directement depuis <code>Documentation.html</code> ; conserver son dossier <code>DocData</code> à côté. Rechercher depuis l’en-tête ou avec Ctrl+K. L’arbre de navigation regroupe les tâches et les références. Aucun environnement Node.js ni serveur web n’est nécessaire à la lecture.</p>\n<h2 id=\"wrapper\">Comprendre le wrapper<a class=\"heading-anchor\" href=\"#/fr/overview/wrapper\" aria-label=\"Lien vers Comprendre le wrapper\">#</a></h2><p>Un wrapper adapte une API autour d’un binaire de plugin existant ou d’une source JSFX. Il conserve le payload original et ses ressources ; il ne traduit pas le code machine et ne change pas sa licence. Garder les artefacts générés et les notices ensemble. Voir <a href=\"#/fr/distribution\">Distribution</a>.</p>\n<h2 id=\"process\">Processus d’hébergement<a class=\"heading-anchor\" href=\"#/fr/overview/process\" aria-label=\"Lien vers Processus d’hébergement\">#</a></h2><p>Le DAW choisit le processus, crée et supervise les workers, transporte l’audio et les événements par IPC, récupère après les crashes et fournit l’éventuelle sandbox de sécurité. CyCLAPBridge s’exécute dans ce processus choisi ; il ne crée pas cette isolation. Ses instances C++, handles et spans audio restent locaux à ce processus. Les plugins et scripts étrangers conservent leur comportement temps réel.</p>\n",
+      "text": "Commencer # CyCLAPBridge 0.2.0 est en développement. Il réunit une bibliothèque statique C++20 d’hébergement, une CLI de conversion et un Studio Windows natif. Il est indépendant des autres projets Cy et des toolkits graphiques tiers. Pour utiliser un plugin ou un script dans un autre format, suivre Créer un wrapper . Pour réaliser un DAW, commencer par Intégrer la bibliothèque . La matrice des formats explique les directions prises en charge et leurs limites. Ouvrir les outils # Après compilation et installation des sources, lancer bin/CyCLAPBridgeStudio.exe ou bin/cyclapbridge-cli.exe dans l’installation. Les libellés de Studio sont actuellement en français. Appuyer sur F1 ou choisir son bouton d’aide pour ouvrir ce manuel. Le sélecteur de langue donne accès à l’édition anglaise complète. Le manuel s’ouvre directement depuis Documentation.html ; conserver son dossier DocData à côté. Rechercher depuis l’en-tête ou avec Ctrl+K. L’arbre de navigation regroupe les tâches et les références. Aucun environnement Node.js ni serveur web n’est nécessaire à la lecture. Comprendre le wrapper # Un wrapper adapte une API autour d’un binaire de plugin existant ou d’une source JSFX. Il conserve le payload original et ses ressources ; il ne traduit pas le code machine et ne change pas sa licence. Garder les artefacts générés et les notices ensemble. Voir Distribution . Processus d’hébergement # Le DAW choisit le processus, crée et supervise les workers, transporte l’audio et les événements par IPC, récupère après les crashes et fournit l’éventuelle sandbox de sécurité. CyCLAPBridge s’exécute dans ce processus choisi ; il ne crée pas cette isolation. Ses instances C++, handles et spans audio restent locaux à ce processus. Les plugins et scripts étrangers conservent leur comportement temps réel.",
+      "headings": [
+        {
+          "id": "getting-started",
+          "text": "Commencer",
+          "level": 2
+        },
+        {
+          "id": "tools",
+          "text": "Ouvrir les outils",
+          "level": 2
+        },
+        {
+          "id": "wrapper",
+          "text": "Comprendre le wrapper",
+          "level": 2
+        },
+        {
+          "id": "process",
+          "text": "Processus d’hébergement",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [
+        "#/fr/studio",
+        "#/fr/library",
+        "#/fr/formats",
+        "#/fr/distribution"
+      ],
+      "kind": "guide",
+      "revision": "3f9c27e6d161"
+    },
+    {
+      "id": "studio",
+      "title": "Créer un wrapper",
+      "description": "Choisir une source, conserver ses ressources et compiler un nouveau projet de conversion.",
+      "section": "Manuel",
+      "parent": "overview",
+      "order": 10,
+      "sourceRevision": "1",
+      "locale": "fr",
+      "html": "<h2 id=\"input\">Choisir l’entrée<a class=\"heading-anchor\" href=\"#/fr/studio/input\" aria-label=\"Lien vers Choisir l’entrée\">#</a></h2><ol>\n<li>Ouvrir Studio et sélectionner le format source à gauche et le format cible à droite.</li>\n<li>Utiliser <strong>Fichier…</strong> pour un fichier de plugin ou une source JSFX, ou <strong>Bundle…</strong> pour un dossier LV2/VST3/AU.</li>\n<li>Choisir un nouveau dossier de projet et saisir le nom du wrapper. Les dossiers de projet existants sont refusés pour éviter d’écraser des données.</li>\n<li>Conserver le dossier des composants CyCLAPBridge détecté ou choisir le dossier installé contenant <code>third_party</code> et <code>templates</code>.</li>\n</ol>\n<p>L’application Windows peut générer des projets Apple, mais compiler des Audio Units demande macOS. Consulter <a href=\"#/fr/formats\">Formats</a> avant de choisir une direction.</p>\n<h2 id=\"resources\">Inclure les ressources<a class=\"heading-anchor\" href=\"#/fr/studio/resources\" aria-label=\"Lien vers Inclure les ressources\">#</a></h2><p>Le dossier facultatif de ressources/imports doit contenir l’entrée sélectionnée et ses fichiers associés. Leurs chemins relatifs sont conservés. Cela sert aux imports JSFX, aux images et aux ressources de plugins. Choisir une destination extérieure à ce dossier source. Les banques, les dépendances externes et les autorisations restent sous la responsabilité de l’éditeur du plugin.</p>\n<h2 id=\"build\">Générer et compiler<a class=\"heading-anchor\" href=\"#/fr/studio/build\" aria-label=\"Lien vers Générer et compiler\">#</a></h2><p><strong>Créer le projet</strong> écrit un projet CMake sans ouvrir le plugin d’entrée. <strong>Créer et compiler</strong> lance aussi CMake et le compilateur sur un thread de fond ; consulter le journal en cas d’échec. Pour une sortie LV2, la compilation lance un outil de métadonnées séparé qui charge le plugin. Cet outil n’est pas une sandbox de sécurité.</p>\n<p>Après réussite, <strong>Ouvrir le résultat</strong> ouvre le dossier des artefacts. Garder le wrapper, son <code>CyCLAPBridge-payload</code> et ses <code>CyCLAPBridge-licenses</code> ensemble. Rien n’est installé automatiquement dans les dossiers de plugins d’un DAW. Suivre la procédure normale de découverte du DAW pour installer le résultat complet.</p>\n<h2 id=\"selection\">Choisir un plugin dans un module<a class=\"heading-anchor\" href=\"#/fr/studio/selection\" aria-label=\"Lien vers Choisir un plugin dans un module\">#</a></h2><p>Studio utilise le premier plugin compatible d’un module multiple. Utiliser la <a href=\"#/fr/cli/selection\">CLI</a> avec <code>--plugin-id</code> lorsqu’un ID ou une URI précis est nécessaire. La CLI expose aussi les générateurs CMake, l’architecture, la configuration et les options de bundle Apple.</p>\n",
+      "text": "Choisir l’entrée # Ouvrir Studio et sélectionner le format source à gauche et le format cible à droite. Utiliser Fichier… pour un fichier de plugin ou une source JSFX, ou Bundle… pour un dossier LV2/VST3/AU. Choisir un nouveau dossier de projet et saisir le nom du wrapper. Les dossiers de projet existants sont refusés pour éviter d’écraser des données. Conserver le dossier des composants CyCLAPBridge détecté ou choisir le dossier installé contenant third_party et templates . L’application Windows peut générer des projets Apple, mais compiler des Audio Units demande macOS. Consulter Formats avant de choisir une direction. Inclure les ressources # Le dossier facultatif de ressources/imports doit contenir l’entrée sélectionnée et ses fichiers associés. Leurs chemins relatifs sont conservés. Cela sert aux imports JSFX, aux images et aux ressources de plugins. Choisir une destination extérieure à ce dossier source. Les banques, les dépendances externes et les autorisations restent sous la responsabilité de l’éditeur du plugin. Générer et compiler # Créer le projet écrit un projet CMake sans ouvrir le plugin d’entrée. Créer et compiler lance aussi CMake et le compilateur sur un thread de fond ; consulter le journal en cas d’échec. Pour une sortie LV2, la compilation lance un outil de métadonnées séparé qui charge le plugin. Cet outil n’est pas une sandbox de sécurité. Après réussite, Ouvrir le résultat ouvre le dossier des artefacts. Garder le wrapper, son CyCLAPBridge-payload et ses CyCLAPBridge-licenses ensemble. Rien n’est installé automatiquement dans les dossiers de plugins d’un DAW. Suivre la procédure normale de découverte du DAW pour installer le résultat complet. Choisir un plugin dans un module # Studio utilise le premier plugin compatible d’un module multiple. Utiliser la CLI avec --plugin-id lorsqu’un ID ou une URI précis est nécessaire. La CLI expose aussi les générateurs CMake, l’architecture, la configuration et les options de bundle Apple.",
+      "headings": [
+        {
+          "id": "input",
+          "text": "Choisir l’entrée",
+          "level": 2
+        },
+        {
+          "id": "resources",
+          "text": "Inclure les ressources",
+          "level": 2
+        },
+        {
+          "id": "build",
+          "text": "Générer et compiler",
+          "level": 2
+        },
+        {
+          "id": "selection",
+          "text": "Choisir un plugin dans un module",
+          "level": 2
+        }
+      ],
+      "anchors": [],
+      "languages": [],
+      "code": "",
+      "assets": [],
+      "links": [
+        "#/fr/formats",
+        "#/fr/cli/selection"
+      ],
+      "kind": "guide",
+      "revision": "9f102d4516f0"
+    }
+  ]
+}

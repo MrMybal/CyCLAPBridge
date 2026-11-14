@@ -1,0 +1,12 @@
+{
+  "name": "cyclapbridge-documentation",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "cydoc build cydoc.config.json && node notices.mjs",
+    "check": "cydoc check cydoc.config.json && node notices.mjs"
+  },
+  "devDependencies": { "cydoc": "file:vendor/cydoc-0.1.0.tgz" }
+}

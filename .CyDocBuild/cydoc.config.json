@@ -1,0 +1,11 @@
+{
+  "name": "CyCLAPBridge",
+  "version": "0.2.0",
+  "defaultLocale": "en",
+  "locales": [{ "code": "en", "label": "English" }, { "code": "fr", "label": "Français" }],
+  "homePage": "overview",
+  "content": "manual",
+  "assets": "assets",
+  "out": "../Documentation",
+  "modules": []
+}

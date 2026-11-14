@@ -1,0 +1,16 @@
+desc:CyBridge Original GFX Fixture
+slider1:1<0,2,0.01>Gain
+in_pin:Left
+in_pin:Right
+out_pin:Left
+out_pin:Right
+@sample
+spl0 *= slider1;
+spl1 *= slider1;
+@gfx 320 180
+gfx_r = 0.2; gfx_g = 0.4; gfx_b = 0.6; gfx_a = 1;
+gfx_rect(0,0,gfx_w,gfx_h);
+(mouse_cap & 1) ? (
+  slider1 = 0.5;
+  slider_automate(slider1);
+);

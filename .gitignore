@@ -1,0 +1,13 @@
+/build/
+/out/
+/dist/
+/generated/
+/.vs/
+CMakeUserPresets.json
+/.CyDocBuild/node_modules/
+/.CyDocBuild/internal/
+/.CyDocBuild/*.log
+/.CyDocBuild/.cache/
+/.env
+/.env.*
+!/.env.example
