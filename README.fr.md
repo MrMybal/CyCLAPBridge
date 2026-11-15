@@ -9,7 +9,7 @@
     <td width="300" align="right" valign="top">
       <p><sub>Licence de l’application</sub><br><a href="LICENSE"><strong>MIT</strong></a></p>
       <p><sub>Version</sub><br><a href="VERSION.fr.md"><strong>0.2.0</strong></a><br><strong>EN DÉVELOPPEMENT</strong></p>
-      <sub>Windows x64 · compilation des sources<br>Linux / macOS · sources préparées</sub>
+      <a href="https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.0/CyCLAPBridgeStudio-0.2.0-Windows-AMD64.zip">Télécharger Windows x64</a><br><sub>Linux / macOS · sources préparées</sub>
     </td>
   </tr>
 </table>
@@ -47,7 +47,7 @@ AAX est exclu. Un script JSFX ne charge pas de plugins natifs arbitraires sans e
 
 ## Installation
 
-Aucun téléchargement applicatif n’est encore publié. Compiler les sources avec **CMake 3.27+**, un **compilateur C++20** et, sous Windows, **Visual Studio 2022 avec Développement Desktop en C++** et un SDK Windows. Studio demande un pilote de bureau OpenGL 3.0 sous Windows/Linux (3.2 sous macOS). Les presets et agencements de paquets Linux/macOS sont préparés ; voir [les compilations par plateforme](docs/Platforms.md). Les wrappers générés demandent aussi un environnement C++. Les dossiers de plugins ne sont pas modifiés automatiquement.
+Télécharger le [ZIP applicatif Windows x64](https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.0/CyCLAPBridgeStudio-0.2.0-Windows-AMD64.zip) depuis la [préversion 0.2.0](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.0). Studio demande un pilote de bureau OpenGL 3.0. La conversion des plugins nécessite **CMake 3.27+**, **Visual Studio 2022 avec Développement Desktop en C++** et un SDK Windows ; l’application elle-même est déjà compilée. Les binaires Linux/macOS restent en attente de validation native ; voir [les compilations par plateforme](docs/Platforms.md). Les dossiers de plugins ne sont pas modifiés automatiquement.
 
 Le ZIP applicatif Studio contient directement `CyCLAPBridgeStudio.exe` à la racine sous Windows. Extraire tout le ZIP et lancer cet exécutable ; conserver son dossier `Resources` à côté. L’application est déjà compilée. La conversion des formats demande encore CMake et le compilateur C++ natif décrits ci-dessus. F1 ouvre le manuel inclus. L’installation développeur séparée fournit `bin/cyclapbridge-cli.exe`, les en-têtes et la bibliothèque statique. Ouvrir `Documentation/Documentation.html` depuis les sources ou `share/CyCLAPBridge/Documentation/Documentation.html` depuis une installation développeur. Conserver tout le dossier du manuel. GitHub affiche le code HTML ; lire ce manuel localement après clonage/téléchargement.
 

@@ -9,7 +9,7 @@
     <td width="300" align="right" valign="top">
       <p><sub>Application license</sub><br><a href="LICENSE"><strong>MIT</strong></a></p>
       <p><sub>Version</sub><br><a href="VERSION.md"><strong>0.2.0</strong></a><br><strong>IN DEVELOPMENT</strong></p>
-      <sub>Windows x64 · source build<br>Linux / macOS · prepared sources</sub>
+      <a href="https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.0/CyCLAPBridgeStudio-0.2.0-Windows-AMD64.zip">Download Windows x64</a><br><sub>Linux / macOS · prepared sources</sub>
     </td>
   </tr>
 </table>
@@ -47,7 +47,7 @@ AAX is excluded. A JSFX script cannot load arbitrary native plugins without a RE
 
 ## Installation
 
-No application download is published yet. Build from source using **CMake 3.27+**, a **C++20 compiler**, and, for Windows, **Visual Studio 2022 Desktop development with C++** and a Windows SDK. Studio requires an OpenGL 3.0 desktop driver on Windows/Linux (3.2 on macOS). Linux/macOS build presets and native package layouts are prepared; see [platform builds](docs/Platforms.md). Generated wrappers also require a C++ toolchain. Plugin folders are not modified automatically.
+Download the [Windows x64 application ZIP](https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.0/CyCLAPBridgeStudio-0.2.0-Windows-AMD64.zip) from the [0.2.0 pre-release](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.0). Studio needs an OpenGL 3.0 desktop driver. Plugin conversion requires **CMake 3.27+**, **Visual Studio 2022 Desktop development with C++** and a Windows SDK; the application itself is already compiled. Linux/macOS binaries remain pending native validation; see [platform builds](docs/Platforms.md). Plugin folders are not modified automatically.
 
 The Studio application ZIP has `CyCLAPBridgeStudio.exe` directly at its root on Windows. Extract the complete ZIP and launch it; keep its `Resources` folder beside it. The application is already compiled. Format conversion still needs CMake and the native C++ toolchain described above. F1 opens the included manual. The separate developer installation provides `bin/cyclapbridge-cli.exe`, headers and the static library. Open `Documentation/Documentation.html` from the checkout, or `share/CyCLAPBridge/Documentation/Documentation.html` from a developer installation. Keep the whole manual directory. GitHub shows HTML source; read this manual locally after cloning/downloading.
 

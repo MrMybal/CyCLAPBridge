@@ -21,6 +21,6 @@
 - The common API does not promise float64, SysEx, MIDI 2, per-voice modulation or complete transport translation.
 - LV2 UI Atom/patch, Gtk/Qt adaptation, JSFX file-drop and non-Windows VST3/LV2/JSFX editors are outside current integration.
 - DAWs supply process supervision, IPC and security isolation. Foreign code retains its own real-time behavior.
-- Studio defaults to English and includes French. No binary release or production compatibility list is published.
+- Studio defaults to English and includes French. The Windows x64 application ZIP is available in [pre-release 0.2.0](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.0); its compatibility scope follows the limitations above.
 
 These notes maintain no itemized confirmed-bug list. Consult the [issue tracker](https://github.com/MrMybal/CyCLAPBridge/issues); repository access may be required. This does not imply an absence of bugs.
