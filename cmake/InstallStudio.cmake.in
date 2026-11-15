@@ -1,0 +1,52 @@
+# The application package is independent of the CMake developer installation.
+set(_destination "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}")
+set(_source "@CMAKE_CURRENT_SOURCE_DIR@")
+if("@APPLE@")
+  file(COPY "@_studio_bundle@" DESTINATION "${_destination}")
+  set(_resources "${_destination}/CyCLAPBridgeStudio.app/Contents/Resources/CyCLAPBridge")
+else()
+  file(COPY "@_studio_executable@" DESTINATION "${_destination}")
+  set(_resources "${_destination}/Resources")
+endif()
+file(MAKE_DIRECTORY "${_resources}")
+file(COPY "${_source}/Documentation" DESTINATION "${_resources}" PATTERN "DocAI.md" EXCLUDE)
+file(COPY "${_source}/LICENSE" "${_source}/THIRD_PARTY.md" DESTINATION "${_resources}")
+file(COPY "${_source}/cmake/ExtractBackend.cmake" DESTINATION "${_resources}")
+string(RANDOM LENGTH 12 ALPHABET abcdef0123456789 _id)
+set(_backend "@CMAKE_CURRENT_BINARY_DIR@/studio-package-${_id}")
+file(MAKE_DIRECTORY "${_backend}/docs")
+file(COPY "${_source}/CMakeLists.txt" "${_source}/src" "${_source}/include"
+  "${_source}/cmake" "${_source}/templates" "${_source}/LICENSE" "${_source}/THIRD_PARTY.md" DESTINATION "${_backend}")
+file(COPY "${_source}/docs/Licensing.md" DESTINATION "${_backend}/docs")
+file(COPY "${_source}/third_party" DESTINATION "${_backend}"
+  PATTERN ".git" EXCLUDE PATTERN ".github" EXCLUDE PATTERN "build" EXCLUDE
+  PATTERN "CyUI" EXCLUDE PATTERN "glfw" EXCLUDE PATTERN "imgui" EXCLUDE
+  PATTERN "AGENTS.md" EXCLUDE PATTERN "CLAUDE.md" EXCLUDE PATTERN "DocAI.md" EXCLUDE)
+execute_process(COMMAND "@CMAKE_COMMAND@" -E tar czf "${_resources}/ConversionBackend.tar.gz" --format=gnutar
+  CMakeLists.txt src include cmake templates third_party docs LICENSE THIRD_PARTY.md
+  WORKING_DIRECTORY "${_backend}" RESULT_VARIABLE _result)
+if(NOT _result EQUAL 0)
+  message(FATAL_ERROR "Cannot package the application's conversion components")
+endif()
+set(_licenses "${_resources}/licenses")
+file(MAKE_DIRECTORY "${_licenses}/studio")
+file(COPY "${_source}/third_party/licenses/" DESTINATION "${_licenses}/runtimes")
+foreach(_entry IN ITEMS
+    "LICENSE|CyCLAPBridge.txt" "third_party/clap/LICENSE|clap.txt"
+    "third_party/clap-wrapper/LICENSE|clap-wrapper.txt" "third_party/vst3sdk/LICENSE.txt|vst3sdk.txt"
+    "third_party/vst3sdk/base/LICENSE.txt|vst3-base.txt" "third_party/vst3sdk/pluginterfaces/LICENSE.txt|vst3-interfaces.txt"
+    "third_party/vst3sdk/public.sdk/LICENSE.txt|vst3-public-sdk.txt" "third_party/AudioUnitSDK/LICENSE.txt|AudioUnitSDK.txt"
+    "third_party/clap-wrapper/libs/fmt/fmt/format.h|fmt-format.h"
+    "third_party/clap-wrapper/libs/psl/presonus-plugin-extensions/ipslgainreduction.h|presonus-extensions.h"
+    "third_party/CyUI/LICENSE|studio/CyUI.txt" "third_party/glfw/LICENSE.md|studio/GLFW.txt"
+    "third_party/imgui/LICENSE.txt|studio/Dear-ImGui.txt"
+    "third_party/CyUI/third_party/jetbrains-mono/OFL.txt|studio/JetBrains-Mono.txt")
+  string(REPLACE "|" ";" _pair "${_entry}")
+  list(GET _pair 0 _input)
+  list(GET _pair 1 _output)
+  configure_file("${_source}/${_input}" "${_licenses}/${_output}" COPYONLY)
+endforeach()
+file(COPY "${_source}/third_party/imgui/imstb_rectpack.h" "${_source}/third_party/imgui/imstb_truetype.h"
+  "${_source}/third_party/imgui/imstb_textedit.h" DESTINATION "${_licenses}/studio/embedded-notices")
+file(WRITE "${_destination}/README.txt" "CyCLAPBridge Studio @PROJECT_VERSION@\n\nENGLISH\nOpen CyCLAPBridgeStudio.exe (Windows), CyCLAPBridgeStudio (Linux), or the .app (macOS).\nKeep Resources next to the executable. Choose an input, a new output folder and Convert.\nThe application is already compiled. Plugin conversion requires CMake 3.27+ and a native C++20 toolchain.\nWindows: Visual Studio 2022 Desktop C++ with a Windows SDK. These common installed tools are detected automatically.\nF1 opens the local manual. Linux/macOS packages require native validation.\n\nFRANCAIS\nLancer CyCLAPBridgeStudio.exe sous Windows, CyCLAPBridgeStudio sous Linux ou le .app sous macOS.\nConserver Resources avec l'executable. Choisir l'entree, un nouveau dossier de destination et Convertir.\nL'application est deja compilee. La conversion des plugins demande CMake 3.27+ et un compilateur C++20 natif.\nWindows : Visual Studio 2022 Developpement Desktop C++ et un SDK Windows, detectes automatiquement si installes.\nF1 ouvre le manuel local. Les paquets Linux/macOS restent a valider nativement.\n")
+message(STATUS "Studio application package installed with its private conversion components")

@@ -32,20 +32,20 @@ void translations() {
         {"Language","Langue"},{"Theme","Thème"},{"Conversion","Conversion"},
         {"Source format","Format source"},{"Target format","Format cible"},
         {"Input plugin","Plugin d’entrée"},{"File","Fichier"},{"Bundle","Bundle"},
-        {"New project folder","Nouveau dossier du projet"},{"Output name","Nom du résultat"},
+        {"Output folder","Dossier de destination"},{"Output name","Nom du résultat"},
         {"Resources and imports","Ressources et imports"},{"Browse","Parcourir"},
         {"Advanced options","Options avancées"},{"Component folder","Dossier des composants"},
         {"Plugin ID (optional)","ID du plugin (facultatif)"},{"CMake executable","Exécutable CMake"},
         {"Generator (optional)","Générateur (facultatif)"},{"Architecture (optional)","Architecture (facultative)"},
         {"Configuration","Configuration"},{"Create project","Créer le projet"},
-        {"Create and build","Créer et compiler"},{"Open result","Ouvrir le résultat"},
-        {"Build log","Journal de compilation"},{"Copy log","Copier le journal"},
-        {"Ready","Prêt"},{"Creating project…","Création du projet…"},
+        {"Convert","Convertir"},{"Open result","Ouvrir le résultat"},
+        {"Conversion log","Journal de conversion"},{"Copy log","Copier le journal"},
+        {"Ready","Prêt"},{"Preparing conversion…","Préparation de la conversion…"},
         {"Building…","Compilation…"},{"Completed","Terminé"},{"Failed","Échec"},
         {"No build output yet.","Aucune sortie de compilation pour le moment."},
         {"Source and target must be different.","La source et la cible doivent être différentes."},
         {"Keep the wrapper, payload, resources and notices together.","Conservez ensemble le wrapper, le payload, les ressources et les notices."},
-        {"Apple projects require macOS; AUv3 also requires Xcode. Apple validation is deferred.","Les projets Apple demandent macOS ; AUv3 demande aussi Xcode. La validation Apple est reportée."},
+        {"Apple conversion requires macOS; AUv3 also requires Xcode. Apple validation is deferred.","La conversion Apple demande macOS ; AUv3 demande aussi Xcode. La validation Apple est reportée."},
         {"Choose a file or folder","Choisir un fichier ou dossier"},{"Location","Emplacement"},
         {"Help (F1)","Aide (F1)"},{"Cannot open the local manual.","Impossible d’ouvrir le manuel local."},
         {"Cannot open the result folder.","Impossible d’ouvrir le dossier du résultat."},
@@ -136,9 +136,9 @@ struct Studio {
         switch(picker.field) {
         case Picker::Field::input:
             input=path;name=pathText(pathFromText(path).stem());
-            if(output.empty())output=pathText(pathFromText(path).parent_path()/(pathFromText(name+"-"+formatName(targets[target])+"-project")));
+            if(output.empty())output=pathText(pathFromText(path).parent_path()/(pathFromText(name+"-"+formatName(targets[target])+"-converted")));
             break;
-        case Picker::Field::output:output=pathText(pathFromText(path)/pathFromText((name.empty()?"Plugin":name)+"-"+formatName(targets[target])+"-project"));break;
+        case Picker::Field::output:output=pathText(pathFromText(path)/pathFromText((name.empty()?"Plugin":name)+"-"+formatName(targets[target])+"-converted"));break;
         case Picker::Field::resources:resources=path;break;
         case Picker::Field::backend:backend=path;break;
         }
@@ -153,7 +153,7 @@ struct Studio {
         if(bundle){ImGui::SameLine();if(cyui::button(label("Bundle").c_str()))picker.begin(field,value,true);}
         ImGui::PopID();
     }
-    void start(bool compile) {
+    void start() {
         try {
             ConversionRequest request;request.source=sources[source];request.target=targets[target];
             request.input=pathFromText(input);request.projectDirectory=pathFromText(output);request.outputName=name;
@@ -162,7 +162,9 @@ struct Studio {
 #ifdef __APPLE__
             if(request.target==Format::auv3&&build.generator.empty())build.generator="Xcode";
 #endif
-            model.start(std::move(request),compile,build);
+            auto settings=settingsFile();
+            auto cache=settings.empty()?fs::temp_directory_path()/"CyCLAPBridge":settings.parent_path();
+            model.convert(std::move(request),build,cache/"Work");
         }catch(const std::exception& e){cyui::notify(e.what(),cyui::Tone::error);}
     }
     void draw() {
@@ -193,14 +195,13 @@ struct Studio {
                 cyui::property(cyui::tr("Target format").c_str());
                 if(ImGui::BeginCombo("##target",formatName(targets[target]).c_str())){for(int i=0;i<static_cast<int>(targets.size());++i)if(ImGui::Selectable(formatName(targets[i]).c_str(),i==target))target=i;ImGui::EndCombo();}
                 pathField("Input plugin",input,Picker::Field::input,true);
-                pathField("New project folder",output,Picker::Field::output);
+                pathField("Output folder",output,Picker::Field::output);
                 cyui::property(cyui::tr("Output name").c_str());ImGui::InputText("##name",&name);
                 pathField("Resources and imports",resources,Picker::Field::resources);
                 cyui::endProperties();
             }
             if(cyui::beginSection(label("Advanced options").c_str(),false)) {
                 if(cyui::beginProperties("##advanced",180)) {
-                    pathField("Component folder",backend,Picker::Field::backend);
                     for(auto field:std::array<std::pair<const char*,std::string*>,5>{{{"Plugin ID (optional)",&pluginId},{"CMake executable",&cmake},{"Generator (optional)",&build.generator},{"Architecture (optional)",&build.architecture},{"Configuration",&build.configuration}}}){
                         cyui::property(cyui::tr(field.first).c_str());ImGui::InputText((std::string("##")+field.first).c_str(),field.second);
                     }
@@ -212,7 +213,7 @@ struct Studio {
         }
         cyui::endCard();
         bool apple=sources[source]==Format::auv2||targets[target]==Format::auv2||targets[target]==Format::auv3;
-        if(apple)cyui::callout(cyui::Tone::warning,cyui::tr("Apple projects require macOS; AUv3 also requires Xcode. Apple validation is deferred.").c_str());
+        if(apple)cyui::callout(cyui::Tone::warning,cyui::tr("Apple conversion requires macOS; AUv3 also requires Xcode. Apple validation is deferred.").c_str());
         const bool identical=sources[source]==targets[target];
         if(identical)cyui::callout(cyui::Tone::warning,cyui::tr("Source and target must be different.").c_str());
         bool buildAllowed=true;
@@ -221,21 +222,19 @@ struct Studio {
 #endif
         const bool invalid=model.busy()||input.empty()||output.empty()||identical;
         ImGui::BeginDisabled(invalid||!buildAllowed);
-        if(cyui::primaryButton(label("Create and build").c_str()))start(true);
-        ImGui::EndDisabled();ImGui::SameLine();ImGui::BeginDisabled(invalid);
-        if(cyui::button(label("Create project").c_str()))start(false);
+        if(cyui::primaryButton(label("Convert").c_str()))start();
         ImGui::EndDisabled();ImGui::SameLine();
         auto snapshot=model.snapshot();
         ImGui::BeginDisabled(model.busy()||snapshot.phase!=Phase::succeeded||snapshot.artifacts.empty());
         if(cyui::button(label("Open result").c_str())&&!openUrl(fileUrl(snapshot.artifacts)))cyui::notify(cyui::tr("Cannot open the result folder.").c_str(),cyui::Tone::error);
         ImGui::EndDisabled();
         const char* phase="Ready";
-        switch(snapshot.phase){case Phase::generating:phase="Creating project…";break;case Phase::building:phase="Building…";break;case Phase::succeeded:phase="Completed";break;case Phase::failed:phase="Failed";break;default:break;}
+        switch(snapshot.phase){case Phase::generating:phase="Preparing conversion…";break;case Phase::building:phase="Building…";break;case Phase::succeeded:phase="Completed";break;case Phase::failed:phase="Failed";break;default:break;}
         cyui::space(8);cyui::badge(cyui::tr(phase).c_str(),snapshot.phase==Phase::failed?cyui::Tone::error:snapshot.phase==Phase::succeeded?cyui::Tone::success:cyui::Tone::neutral);
         if(model.busy())cyui::progressBar(-1,cyui::dp(-1,4));
         if(!snapshot.error.empty())cyui::callout(cyui::Tone::error,snapshot.error.c_str());
         cyui::textDim("%s",cyui::tr("Keep the wrapper, payload, resources and notices together.").c_str());
-        cyui::sectionTitle(cyui::tr("Build log").c_str());
+        cyui::sectionTitle(cyui::tr("Conversion log").c_str());
         if(!snapshot.log.empty()){if(cyui::button(label("Copy log").c_str()))ImGui::SetClipboardText(snapshot.log.c_str());}
         if(snapshot.log.empty())snapshot.log=cyui::tr("No build output yet.");
         ImGui::InputTextMultiline("##log",snapshot.log.data(),snapshot.log.size()+1,{ImGui::GetContentRegionAvail().x,std::max(cyui::dp(130.f),ImGui::GetContentRegionAvail().y-cyui::dp(8.f))},ImGuiInputTextFlags_ReadOnly);
@@ -267,6 +266,22 @@ bool capture(const fs::path& path,int width,int height) {
     out.write(reinterpret_cast<const char*>(bgr.data()),static_cast<std::streamsize>(bgr.size()));return static_cast<bool>(out);
 }
 int run(const std::vector<std::string>& args) {
+    if(args.size()==5&&args[0]=="--convert-test") {
+        ConversionRequest request;request.source=parseFormat(args[1]);request.target=parseFormat(args[2]);
+        request.input=pathFromText(args[3]);request.projectDirectory=pathFromText(args[4]);
+        request.backend=backendFromRoot(cybridge::app::backendRoot());
+        auto options=cybridge::app::buildOptions();
+#ifdef __APPLE__
+        if(request.target==Format::auv3)options.generator="Xcode";
+#endif
+        Model model;auto settings=settingsFile();
+        auto cache=settings.empty()?fs::temp_directory_path()/"CyCLAPBridge":settings.parent_path();
+        model.convert(std::move(request),options,cache/"Work");
+        while(model.busy())std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        auto result=model.snapshot();std::cout<<result.log;
+        if(result.phase!=Phase::succeeded){std::cerr<<result.error<<'\n';return 1;}
+        std::cout<<"Output: "<<pathText(result.artifacts)<<'\n';return 0;
+    }
     bool smoke=false,renderTest=false;std::string theme,locale;fs::path image;
     for(std::size_t i=0;i<args.size();++i) {
         if(args[i]=="--smoke-test")smoke=true;

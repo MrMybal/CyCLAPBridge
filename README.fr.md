@@ -24,7 +24,7 @@ Bibliothèque C++20 autonome, CLI et application de bureau CyUI pour héberger d
 
 ## Créer des wrappers ou intégrer un hôte
 
-**Studio** crée un projet CMake à partir d’un plugin ou d’un script JSFX. Choisir les formats source et cible, l’entrée, un nouveau dossier de projet et le nom du résultat. **Créer le projet** génère les sources ; **Créer et compiler** compile aussi sur un thread de fond. **Ouvrir le résultat** ouvre les artefacts. Studio propose l’anglais par défaut et le français, un sélecteur de thème et un navigateur de fichiers commun. F1 ouvre le manuel dans la langue choisie.
+**Studio** convertit un plugin ou un script JSFX en wrapper compilé. Choisir les formats source et cible, l’entrée, un nouveau dossier de destination et le nom du résultat, puis **Convertir**. La conversion tourne en arrière-plan et livre le plugin, son payload et ses notices dans ce dossier. **Ouvrir le résultat** ouvre la conversion terminée. Studio propose l’anglais par défaut et le français, un sélecteur de thème et un navigateur de fichiers commun. F1 ouvre le manuel dans la langue choisie.
 
 La CLI permet aussi d’inspecter les modules. Un dossier de ressources facultatif conserve les imports et les assets. Garder ensemble le wrapper, `CyCLAPBridge-payload` et les notices. La conversion adapte une API autour du payload original ; elle ne recompile pas ce plugin et ne change pas ses conditions de redistribution.
 
@@ -49,7 +49,7 @@ AAX est exclu. Un script JSFX ne charge pas de plugins natifs arbitraires sans e
 
 Aucun téléchargement applicatif n’est encore publié. Compiler les sources avec **CMake 3.27+**, un **compilateur C++20** et, sous Windows, **Visual Studio 2022 avec Développement Desktop en C++** et un SDK Windows. Studio demande un pilote de bureau OpenGL 3.0 sous Windows/Linux (3.2 sous macOS). Les presets et agencements de paquets Linux/macOS sont préparés ; voir [les compilations par plateforme](docs/Platforms.md). Les wrappers générés demandent aussi un environnement C++. Les dossiers de plugins ne sont pas modifiés automatiquement.
 
-Après installation, lancer `dist/CyCLAPBridge/bin/CyCLAPBridgeStudio.exe` ou `cyclapbridge-cli.exe` dans le même dossier. Ouvrir `Documentation/Documentation.html` depuis les sources ou `share/CyCLAPBridge/Documentation/Documentation.html` depuis une installation. Conserver tout le dossier du manuel. GitHub affiche le code HTML ; lire ce manuel localement après clonage/téléchargement.
+Le ZIP applicatif Studio contient directement `CyCLAPBridgeStudio.exe` à la racine sous Windows. Extraire tout le ZIP et lancer cet exécutable ; conserver son dossier `Resources` à côté. L’application est déjà compilée. La conversion des formats demande encore CMake et le compilateur C++ natif décrits ci-dessus. F1 ouvre le manuel inclus. L’installation développeur séparée fournit `bin/cyclapbridge-cli.exe`, les en-têtes et la bibliothèque statique. Ouvrir `Documentation/Documentation.html` depuis les sources ou `share/CyCLAPBridge/Documentation/Documentation.html` depuis une installation développeur. Conserver tout le dossier du manuel. GitHub affiche le code HTML ; lire ce manuel localement après clonage/téléchargement.
 
 ## Sources et compilation
 
@@ -63,7 +63,7 @@ cmake --build build/release --config Release
 cmake --install build/release --config Release --prefix dist/CyCLAPBridge
 ```
 
-L’accès au dépôt privé demande une permission. Les SDK sont épinglés ; les runtimes LV2/ysfx sont des snapshots conservés. La configuration et la conversion ne téléchargent pas de dépendances. L’installation par défaut fournit les sources de conversion hors ligne. Les presets de distribution Windows demandent aussi les outils objets LLVM (outils C++ Clang de Visual Studio) ; voir [les prérequis par plateforme](docs/Platforms.md).
+L’accès au dépôt privé demande une permission. Les SDK sont épinglés ; les runtimes LV2/ysfx sont des snapshots conservés. La configuration et la conversion ne téléchargent pas de dépendances. L’installation par défaut fournit les sources de conversion hors ligne. Le preset Studio Windows lie statiquement le runtime MSVC. Les paquets applicatifs sont séparés du SDK développeur ; voir [les prérequis par plateforme](docs/Platforms.md).
 
 <details>
 <summary>Intégration statique et cibles facultatives</summary>

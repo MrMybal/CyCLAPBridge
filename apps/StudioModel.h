@@ -16,6 +16,8 @@ class Model {
 public:
     ~Model();
     bool start(ConversionRequest, bool compile, BuildOptions);
+    // Application workflow: build privately, then deliver runtime artifacts only.
+    bool convert(ConversionRequest, BuildOptions, const std::filesystem::path& workRoot);
     bool busy() const noexcept { return running_.load(std::memory_order_acquire); }
     Snapshot snapshot() const;
 private:

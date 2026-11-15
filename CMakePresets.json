@@ -1,22 +1,116 @@
 {
   "version": 6,
-  "cmakeMinimumRequired": { "major": 3, "minor": 27, "patch": 0 },
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 27,
+    "patch": 0
+  },
   "configurePresets": [
-    { "name": "studio-base", "hidden": true, "binaryDir": "${sourceDir}/build/${presetName}", "cacheVariables": { "CYCLAPBRIDGE_BUILD_GUI": "ON", "CYCLAPBRIDGE_BUILD_CLI": "ON", "CYCLAPBRIDGE_BUILD_TESTS": "OFF", "CMAKE_BUILD_TYPE": "Release" } },
-    { "name": "windows-x64", "displayName": "Windows x64 Studio", "inherits": "studio-base", "generator": "Visual Studio 17 2022", "architecture": "x64", "cacheVariables": { "CYCLAPBRIDGE_CLEAN_ARCHIVE": "ON" }, "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" } },
-    { "name": "linux", "displayName": "Linux Studio (X11, native architecture)", "inherits": "studio-base", "generator": "Unix Makefiles", "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" } },
-    { "name": "macos", "displayName": "macOS Studio (native architecture)", "inherits": "studio-base", "generator": "Xcode", "cacheVariables": { "CMAKE_OSX_DEPLOYMENT_TARGET": "11.0" }, "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Darwin" } },
-    { "name": "library-only", "displayName": "Static library without Studio dependencies", "binaryDir": "${sourceDir}/build/library-only", "cacheVariables": { "CYCLAPBRIDGE_BUILD_GUI": "OFF", "CYCLAPBRIDGE_BUILD_CLI": "OFF", "CYCLAPBRIDGE_BUILD_TESTS": "OFF", "CYCLAPBRIDGE_INSTALL_BACKEND": "OFF", "CYCLAPBRIDGE_CLEAN_ARCHIVE": "ON", "CMAKE_BUILD_TYPE": "Release" } }
+    {
+      "name": "studio-base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CYCLAPBRIDGE_BUILD_GUI": "ON",
+        "CYCLAPBRIDGE_BUILD_CLI": "ON",
+        "CYCLAPBRIDGE_BUILD_TESTS": "OFF",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-x64",
+      "displayName": "Windows x64 Studio",
+      "inherits": "studio-base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CYCLAPBRIDGE_STATIC_RUNTIME": "ON",
+        "CYCLAPBRIDGE_CLEAN_ARCHIVE": "OFF"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux Studio (X11, native architecture)",
+      "inherits": "studio-base",
+      "generator": "Unix Makefiles",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "macos",
+      "displayName": "macOS Studio (native architecture)",
+      "inherits": "studio-base",
+      "generator": "Xcode",
+      "cacheVariables": {
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "11.0"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "library-only",
+      "displayName": "Static library without Studio dependencies",
+      "binaryDir": "${sourceDir}/build/library-only",
+      "cacheVariables": {
+        "CYCLAPBRIDGE_BUILD_GUI": "OFF",
+        "CYCLAPBRIDGE_BUILD_CLI": "OFF",
+        "CYCLAPBRIDGE_BUILD_TESTS": "OFF",
+        "CYCLAPBRIDGE_INSTALL_BACKEND": "OFF",
+        "CYCLAPBRIDGE_CLEAN_ARCHIVE": "ON",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
   ],
   "buildPresets": [
-    { "name": "windows-x64", "configurePreset": "windows-x64", "configuration": "Release" },
-    { "name": "linux", "configurePreset": "linux" },
-    { "name": "macos", "configurePreset": "macos", "configuration": "Release" },
-    { "name": "library-only", "configurePreset": "library-only", "configuration": "Release" }
+    {
+      "name": "windows-x64",
+      "configurePreset": "windows-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux",
+      "configurePreset": "linux"
+    },
+    {
+      "name": "macos",
+      "configurePreset": "macos",
+      "configuration": "Release"
+    },
+    {
+      "name": "library-only",
+      "configurePreset": "library-only",
+      "configuration": "Release"
+    }
   ],
   "packagePresets": [
-    { "name": "windows-x64", "configurePreset": "windows-x64", "configurations": ["Release"] },
-    { "name": "linux", "configurePreset": "linux" },
-    { "name": "macos", "configurePreset": "macos", "configurations": ["Release"] }
+    {
+      "name": "windows-x64",
+      "configurePreset": "windows-x64",
+      "configurations": [
+        "Release"
+      ]
+    },
+    {
+      "name": "linux",
+      "configurePreset": "linux"
+    },
+    {
+      "name": "macos",
+      "configurePreset": "macos",
+      "configurations": [
+        "Release"
+      ]
+    }
   ]
 }

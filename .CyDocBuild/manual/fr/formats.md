@@ -5,7 +5,7 @@ description: Comprendre les directions d’entrée/sortie et les éditeurs natif
 section: Manuel
 parent: overview
 order: 30
-sourceRevision: 2
+sourceRevision: 3
 ---
 
 ## Matrice de conversion {#matrix}
@@ -26,6 +26,8 @@ L’implémentation Apple est disponible dans les sources ; les tests natifs son
 JSFX est un langage de scripts. Un script JSFX ordinaire ne charge pas de plugins natifs CLAP/VST3/LV2/AU. Une telle sortie demanderait une extension native REAPER ; CyCLAPBridge la refuse. Le runtime ysfx épinglé gère jusqu’à 64 sliders et 64 canaux. Conserver imports et ressources. Les fonctions propres à REAPER peuvent demander des services extérieurs à un hôte autonome.
 
 ## Contrat commun audio et éditeur {#common}
+
+Les sorties LV2 générées exposent l’audio, les paramètres et l’état. Elles n’exportent pas actuellement l’éditeur natif du plugin source ; l’hôte peut fournir des contrôles génériques. L’hébergement d’une WindowsUI LV2 existante est pris en charge séparément.
 
 L’API commune représente les bus float32, les événements de paramètres, les notes et les messages MIDI 1. Les valeurs VST3 sont normalisées dans [0,1] ; les autres backends conservent leurs unités natives. Les événements non représentables sont refusés ou signalés par `outputEventsDropped`. Float64, SysEx, MIDI 2, modulation par voix et traduction complète du transport sont hors de ce contrat.
 

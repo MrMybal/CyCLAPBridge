@@ -27,7 +27,7 @@ inline std::filesystem::path executablePath() {
 }
 inline std::filesystem::path dataRoot() {
     const auto directory=executablePath().parent_path();
-    for(const auto& candidate:{directory/"../Resources/CyCLAPBridge",
+    for(const auto& candidate:{directory/"Resources",directory/"../Resources/CyCLAPBridge",
             directory/"../share/CyCLAPBridge",
             directory/"../CyCLAPBridgeStudio.app/Contents/Resources/CyCLAPBridge"})
         if(std::filesystem::is_regular_file(candidate/"Documentation/Documentation.html"))

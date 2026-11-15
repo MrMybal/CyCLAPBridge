@@ -31,6 +31,17 @@ int run(const fs::path& root,const fs::path& fixture,const fs::path& work) {
     result=complete(model);require(result.phase==Phase::failed&&!result.error.empty(),"Existing output was accepted");
     request.projectDirectory=base/"next";require(model.start(request,false,{}),"Recovery request rejected");
     require(complete(model).phase==Phase::succeeded,"Controller did not recover");
+    // App conversion refuses existing destinations and cleans failed build work.
+    const auto privateWork=base/"private-work";
+    require(model.convert(request,{},privateWork),"App request rejected");
+    require(complete(model).phase==Phase::failed,"Existing app output was accepted");
+    require(fs::is_regular_file(request.projectDirectory/"CMakeLists.txt"),"Existing output was modified");
+    request.projectDirectory=base/"runtime-output";
+    BuildOptions invalidTools;invalidTools.cmake=base/"missing-cmake";
+    require(model.convert(request,invalidTools,privateWork),"Failure-path request rejected");
+    require(complete(model).phase==Phase::failed,"Missing toolchain unexpectedly succeeded");
+    require(!fs::exists(request.projectDirectory),"Failed conversion left a partial result");
+    require(fs::is_empty(privateWork),"Private build workspace was not cleaned");
     const auto url=fileUrl(base/pathFromText("Aide été #1.html"));
     require(url.rfind("file:///",0)==0,"Invalid file URL scheme");
     require(url.find(' ')==std::string::npos&&url.find('#')==std::string::npos,"Unescaped path characters in help URL");

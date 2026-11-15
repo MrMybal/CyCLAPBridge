@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.27)
+if(NOT DEFINED ARCHIVE OR NOT DEFINED OUTPUT OR NOT EXISTS "${ARCHIVE}")
+  message(FATAL_ERROR "Missing application conversion components")
+endif()
+file(MAKE_DIRECTORY "${OUTPUT}")
+file(ARCHIVE_EXTRACT INPUT "${ARCHIVE}" DESTINATION "${OUTPUT}")

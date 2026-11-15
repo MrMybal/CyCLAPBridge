@@ -1,5 +1,22 @@
 # Native validation
 
+## Studio application package
+
+The Studio ZIP exposes the executable directly at its root, a Resources folder
+and a startup guide. It is packaged independently of the developer SDK. The
+application's import table contains only Windows system libraries; its MSVC
+runtime is linked statically. Smoke and native rendering checks pass from the
+extracted application. The same controller as Convert successfully delivered
+JSFX-to-CLAP, JSFX-to-VST3 and CLAP-to-LV2 results from the bundled component
+archive, without using checkout sources. Work directories were removed after
+conversion, and existing output directories were preserved.
+
+The CLAP and VST3 outputs passed editor, audio/automation and state acceptance.
+The LV2 output passed audio, automation and state acceptance; generated LV2
+outputs do not export a native editor. Failure-path controller tests confirm
+that missing build tools leave no partial output or private workspace behind.
+The complete Windows suite passes 11/11 tests after these changes.
+
 ## Portable Studio, 2026-11-15
 
 The CyUI/GLFW/OpenGL Studio builds on Windows x64. The native suite passes

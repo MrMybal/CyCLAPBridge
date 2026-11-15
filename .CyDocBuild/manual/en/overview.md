@@ -4,18 +4,18 @@ title: CyCLAPBridge
 description: Choose between creating a wrapper and integrating plugin hosting.
 section: Manual
 order: 0
-revision: 2
+revision: 3
 ---
 
 ## Start here {#getting-started}
 
-CyCLAPBridge 0.2.0 is in development. It combines a static C++20 hosting library, a conversion CLI and a CyUI desktop Studio. It is independent of other Cy projects and of third-party UI toolkits.
+CyCLAPBridge 0.2.0 is in development. It combines a static C++20 hosting library, a conversion CLI and a CyUI desktop Studio. The audio library is independent of other Cy projects and UI toolkits; the optional Studio uses CyUI.
 
 For a plugin or script you want to use in another format, follow [Create a wrapper](doc:studio). For a DAW implementation, start with [Integrate the library](doc:library). The [format matrix](doc:formats) explains the supported directions and their boundaries.
 
 ## Open the tools {#tools}
 
-After building and installing the sources, run `bin/CyCLAPBridgeStudio.exe` or `bin/cyclapbridge-cli.exe` in the installation. Studio defaults to English and offers a French language choice, built-in themes and a shared file browser. Press F1 or choose its help button to open this manual. Use the language selector for the complete French edition.
+Extract the Studio application package and run `CyCLAPBridgeStudio.exe` directly at its root on Windows. Keep `Resources` next to it. Studio defaults to English and includes French, themes and a shared file browser. F1 opens this manual. Plugin conversion needs CMake 3.27+ and a native C++20 toolchain; the application itself is already compiled.
 
 The manual opens directly from `Documentation.html`; keep its `DocData` directory beside it. Search from the header or with Ctrl+K. The navigation tree groups tasks and reference pages. No Node.js runtime or web server is required for reading.
 
@@ -29,4 +29,4 @@ The DAW chooses the process, creates and supervises workers, transports audio/ev
 
 ## Platform applications {#platforms}
 
-On Windows, run `bin/CyCLAPBridgeStudio.exe`; on Linux, `bin/CyCLAPBridgeStudio`. The prepared macOS installation contains `CyCLAPBridgeStudio.app`. Native Linux/macOS builds still require validation. Keep the complete installed tree. The Mac app stores its manual and conversion resources inside `Contents/Resources/CyCLAPBridge`.
+On Windows, run `CyCLAPBridgeStudio.exe`; on Linux, `CyCLAPBridgeStudio`. The prepared macOS application package contains `CyCLAPBridgeStudio.app`. Native Linux/macOS builds still require validation. Keep the complete application folder. The Mac app stores its manual and conversion components in `Contents/Resources/CyCLAPBridge`. The developer SDK and CLI are distributed separately.

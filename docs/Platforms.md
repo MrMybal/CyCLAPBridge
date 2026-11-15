@@ -30,20 +30,21 @@ bundled ImGui copy is not compiled. No changes to CyUI are needed.
 Install Visual Studio 2022 Desktop development with C++, a Windows SDK and CMake
 3.27+. Put CMake on PATH for Studio/CLI conversion builds, or select its executable
 in Studio's Advanced options. A working OpenGL 3.0 driver and the matching Visual
-C++ runtime are required. No GLFW/CyUI DLL is distributed: those targets are static.
-The Windows distribution presets additionally use LLVM object tools, available
-with Visual Studio's C++ Clang tools, to omit debug metadata from the installed
-static archive. This is build tooling only. Local development installations can
-set `CYCLAPBRIDGE_CLEAN_ARCHIVE=OFF` without changing the audio library's API.
+C++ toolchain are required for plugin conversions. The application package itself
+links the MSVC runtime, GLFW and CyUI statically. Its executable starts without
+a separate Visual C++ runtime installation.
 
 ```sh
 cmake --preset windows-x64
 cmake --build --preset windows-x64 --parallel
-cmake --install build/windows-x64 --config Release --prefix dist/CyCLAPBridge
+cmake --install build/windows-x64 --config Release --component Studio --prefix dist/CyCLAPBridgeStudio
 cpack --preset windows-x64
 ```
 
-Run `bin/CyCLAPBridgeStudio.exe` from the installed/extracted tree.
+Run `CyCLAPBridgeStudio.exe` directly at the root of the installed/extracted
+application. Keep `Resources` beside it. The ZIP contains this executable, its
+resources and a short startup guide; the developer headers and static library
+belong to the separate SDK distribution.
 
 ## Linux
 
@@ -59,11 +60,11 @@ Opening local help/results uses `xdg-open`; install the desktop's `xdg-utils`.
 ```sh
 cmake --preset linux
 cmake --build --preset linux --parallel
-cmake --install build/linux --prefix dist/CyCLAPBridge
+cmake --install build/linux --component Studio --prefix dist/CyCLAPBridgeStudio
 cpack --preset linux
 ```
 
-Run `bin/CyCLAPBridgeStudio` from the installed/extracted tree. Display/runtime
+Run `CyCLAPBridgeStudio` from the root of the installed/extracted application. Display/runtime
 libraries remain OS requirements. Native library/plugin compatibility is unvalidated.
 
 ## macOS
@@ -75,7 +76,7 @@ OpenGL; this implementation has not been validated on a Mac.
 ```sh
 cmake --preset macos
 cmake --build --preset macos --parallel
-cmake --install build/macos --config Release --prefix dist/CyCLAPBridge
+cmake --install build/macos --config Release --component Studio --prefix dist/CyCLAPBridgeStudio
 cpack --preset macos
 ```
 
@@ -94,6 +95,12 @@ cmake --build --preset library-only --config Release
 
 This configuration does not initialize or build the Studio dependencies. Existing
 audio SDK submodules remain required for the library build and retained notices.
+
+To package a developer SDK instead of the application, configure with
+`CYCLAPBRIDGE_PACKAGE_STUDIO=OFF`. A normal `cmake --install` retains the developer
+layout; `--component Studio` explicitly installs the user application. Windows
+library-only archive cleanup uses LLVM object tools from Visual Studio's C++
+Clang tools; local development can use `CYCLAPBRIDGE_CLEAN_ARCHIVE=OFF`.
 
 Native tests are opt-in through `-DCYCLAPBRIDGE_BUILD_TESTS=ON`, then run CTest
 with `--output-on-failure` and `-C Release` for a multi-configuration generator.

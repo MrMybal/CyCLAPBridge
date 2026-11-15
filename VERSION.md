@@ -6,6 +6,7 @@
 
 ## Current implementation
 
+- Separate Studio application package with a root executable and private conversion components. Convert delivers compiled plugins, payloads and notices; the developer SDK remains separate.
 - Standalone static C++20 library, CyUI Studio for Windows/Linux/macOS and conversion CLI.
 - CLAP/VST3/LV2/JSFX hosting and wrappers, float32 processing, representable events, latency and state.
 - Embedded Windows CLAP, VST3 HWND, LV2 WindowsUI and JSFX `@gfx` editors, including CLAP facades.

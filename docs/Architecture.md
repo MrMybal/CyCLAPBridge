@@ -73,3 +73,12 @@ public headers or CMake export. The same interface and background conversion
 controller serve Windows, Linux X11 and macOS. Platform helpers own local help
 URLs, filesystem roots and user preferences. The DAW's process-management
 responsibilities are unchanged. See [platform build layouts](Platforms.md).
+
+The Studio application distribution is separate from the developer SDK. Its
+executable locates a sibling Resources directory (or the Mac bundle resources).
+Packaged conversion components are extracted into a fresh per-user workspace.
+The application controller builds there, then stages runtime artifacts beside
+the chosen destination and renames them into the new output folder. Existing
+destinations are refused, failed conversions leave no partial output, and the
+controller removes only work directories it created exclusively for that job.
+The CLI retains explicit source-project generation for developer workflows.

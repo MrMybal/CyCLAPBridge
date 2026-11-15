@@ -6,6 +6,7 @@
 
 ## Implémentation actuelle
 
+- Paquet applicatif Studio séparé, avec exécutable à la racine et composants de conversion internes. Convertir livre les plugins compilés, payloads et notices ; le SDK développeur reste séparé.
 - Bibliothèque statique C++20 autonome, Studio CyUI pour Windows/Linux/macOS et CLI de conversion.
 - Hébergement et wrappers CLAP/VST3/LV2/JSFX, traitement float32, événements représentables, latence et état.
 - Éditeurs Windows embarqués CLAP, VST3 HWND, LV2 WindowsUI et JSFX `@gfx`, y compris dans les façades CLAP.

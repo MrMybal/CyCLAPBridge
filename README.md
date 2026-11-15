@@ -24,7 +24,7 @@ Standalone C++20 library, CLI and CyUI desktop application for hosting audio plu
 
 ## Create wrappers or integrate a host
 
-**Studio** creates a CMake project from a plugin or JSFX script. Choose the source and target formats, input, a new project directory and result name. **Create project** generates sources; **Create and build** also compiles on a background thread. **Open result** opens the artifacts. Studio defaults to English and includes French, a theme selector and a shared file browser. F1 opens the manual in the selected language.
+**Studio** converts a plugin or JSFX script into a compiled format wrapper. Choose the source and target formats, input, a new output folder and result name, then **Convert**. Conversion runs on a background thread and delivers the plugin, payload and notices into that folder. **Open result** opens the completed conversion. Studio defaults to English and includes French, a theme selector and a shared file browser. F1 opens the manual in the selected language.
 
 The CLI also inspects modules. An optional resource directory preserves imports and assets. Keep the wrapper, `CyCLAPBridge-payload` and notices together. Conversion adapts an API around the original payload; it does not recompile that plugin or change its redistribution terms.
 
@@ -49,7 +49,7 @@ AAX is excluded. A JSFX script cannot load arbitrary native plugins without a RE
 
 No application download is published yet. Build from source using **CMake 3.27+**, a **C++20 compiler**, and, for Windows, **Visual Studio 2022 Desktop development with C++** and a Windows SDK. Studio requires an OpenGL 3.0 desktop driver on Windows/Linux (3.2 on macOS). Linux/macOS build presets and native package layouts are prepared; see [platform builds](docs/Platforms.md). Generated wrappers also require a C++ toolchain. Plugin folders are not modified automatically.
 
-After installation, launch `dist/CyCLAPBridge/bin/CyCLAPBridgeStudio.exe` or `cyclapbridge-cli.exe` in the same directory. Open `Documentation/Documentation.html` from the checkout, or `share/CyCLAPBridge/Documentation/Documentation.html` from an installation. Keep the whole manual directory. GitHub shows HTML source; read this manual locally after cloning/downloading.
+The Studio application ZIP has `CyCLAPBridgeStudio.exe` directly at its root on Windows. Extract the complete ZIP and launch it; keep its `Resources` folder beside it. The application is already compiled. Format conversion still needs CMake and the native C++ toolchain described above. F1 opens the included manual. The separate developer installation provides `bin/cyclapbridge-cli.exe`, headers and the static library. Open `Documentation/Documentation.html` from the checkout, or `share/CyCLAPBridge/Documentation/Documentation.html` from a developer installation. Keep the whole manual directory. GitHub shows HTML source; read this manual locally after cloning/downloading.
 
 ## Sources and build
 
@@ -63,7 +63,7 @@ cmake --build build/release --config Release
 cmake --install build/release --config Release --prefix dist/CyCLAPBridge
 ```
 
-Private repository access requires permission. SDKs are pinned; LV2/ysfx runtimes are retained snapshots. Configuration and conversion do not download dependencies. The default installation supplies the offline conversion sources. The Windows distribution presets also require LLVM object tools (Visual Studio C++ Clang tools); see [platform prerequisites](docs/Platforms.md).
+Private repository access requires permission. SDKs are pinned; LV2/ysfx runtimes are retained snapshots. Configuration and conversion do not download dependencies. The default installation supplies the offline conversion sources. The Windows Studio preset links the MSVC runtime statically. Application packages are separate from the developer SDK; see [platform prerequisites](docs/Platforms.md).
 
 <details>
 <summary>Static library integration and optional targets</summary>
