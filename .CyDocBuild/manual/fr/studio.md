@@ -5,7 +5,7 @@ description: Choisir une source, conserver ses ressources et compiler un nouveau
 section: Manuel
 parent: overview
 order: 10
-sourceRevision: 2
+sourceRevision: 3
 ---
 
 ```image
@@ -33,7 +33,7 @@ Après réussite, **Ouvrir le résultat** ouvre le dossier des artefacts. Garder
 
 ## Choisir un plugin dans un module {#selection}
 
-Studio utilise le premier plugin compatible d’un module multiple. Utiliser la [CLI](doc:cli#selection) avec `--plugin-id` lorsqu’un ID ou une URI précis est nécessaire. La CLI expose aussi les générateurs CMake, l’architecture, la configuration et les options de bundle Apple.
+Studio utilise par défaut le premier plugin compatible d’un module multiple. Saisir son ID CLAP, son URI LV2 ou son ID de classe VST3 dans **ID du plugin (facultatif)** sous **Options avancées** pour sélectionner un plugin précis. La [CLI](doc:cli#selection) propose l’option équivalente `--plugin-id` ainsi que des options supplémentaires de bundle Apple.
 
 ## Langue, thème et outils {#settings}
 

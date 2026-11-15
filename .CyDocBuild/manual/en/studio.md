@@ -5,7 +5,7 @@ description: Select a source, preserve resources and build a new conversion proj
 section: Manual
 parent: overview
 order: 10
-revision: 2
+revision: 3
 ---
 
 ```image
@@ -33,7 +33,7 @@ After success, **Open result** opens the artifacts directory. Keep the wrapper, 
 
 ## Select a plugin inside a module {#selection}
 
-Studio uses the first compatible plugin in a multi-plugin module. Use the [CLI](doc:cli#selection) with `--plugin-id` when a specific ID or URI is needed. The CLI also exposes custom CMake generators, architecture, configuration and Apple bundle options.
+Studio uses the first compatible plugin in a multi-plugin module by default. Enter its CLAP ID, LV2 URI or VST3 class ID in **Plugin ID (optional)** under **Advanced options** to select a particular plugin. The [CLI](doc:cli#selection) provides the equivalent `--plugin-id` option and additional Apple bundle options.
 
 ## Language, theme and tools {#settings}
 
