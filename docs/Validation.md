@@ -1,5 +1,27 @@
 # Native validation
 
+## Portable Studio, 2026-11-15
+
+The CyUI/GLFW/OpenGL Studio builds on Windows x64. The native suite passes
+11/11 tests, including all previous audio/editor conversion chains, controller
+generation and recovery, escaped Unicode help URLs, headless forms in every
+built-in theme and both languages, and a real native OpenGL rendering check.
+Actual theme captures use synthetic/empty input fields. The library-only preset
+also builds independently of the Studio dependencies.
+
+The Windows ZIP was extracted and its Studio passed both smoke/render modes.
+The extracted CLI compiled JSFX to CLAP using only its packaged conversion SDK;
+that wrapper passed audio, automation and state acceptance. A separate CMake
+DAW example linked the installed library-only archive and processed the original
+CLAP fixture and the packaged wrapper. The installed MSVC archive preserves all
+106 compiled objects while omitting debug metadata and absolute member paths.
+
+Linux X11 and macOS build/package presets and platform sources are prepared.
+They have not been compiled or executed on those operating systems. Native
+macOS tests remain deferred by the owner; signing/notarization is not performed.
+
+## Previous native audio/editor coverage
+
 Validated on 2026-11-14 on Windows x64 with MSVC 19.40 (Visual Studio 2022)
 and Windows SDK 10.0.26100.0, CMake 3.31.6, Release configuration.
 Editor acceptance was extended on 2026-11-15 with the same toolchain.

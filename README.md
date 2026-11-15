@@ -9,20 +9,22 @@
     <td width="300" align="right" valign="top">
       <p><sub>Application license</sub><br><a href="LICENSE"><strong>MIT</strong></a></p>
       <p><sub>Version</sub><br><a href="VERSION.md"><strong>0.2.0</strong></a><br><strong>IN DEVELOPMENT</strong></p>
-      <sub>Windows x64 · source build</sub>
+      <sub>Windows x64 · source build<br>Linux / macOS · prepared sources</sub>
     </td>
   </tr>
 </table>
 
 <h1 align="center">CyCLAPBridge</h1>
 
-Standalone C++20 library, CLI and native Windows application for hosting audio plugins and creating format wrappers. For plugin users building wrappers and DAW developers integrating hosting. No dependency on CyAudioCore, CyDSP, CyDAW, CyUI or a third-party UI toolkit.
+Standalone C++20 library, CLI and CyUI desktop application for hosting audio plugins and creating format wrappers. For plugin users building wrappers and DAW developers integrating hosting. The audio library has no dependency on CyAudioCore, CyDSP, CyDAW or CyUI. Studio links its own optional UI dependencies.
 
-> **IN DEVELOPMENT · 0.2.0** — Windows x64 is the current native target. Apple integrations are in source; macOS builds and tests are deferred. Read the [version notes and limitations](VERSION.md).
+> **IN DEVELOPMENT · 0.2.0** — Studio now shares one interface across Windows, Linux and macOS. Windows x64 is validated; native Linux/macOS builds remain to be validated. Apple plugin integration tests are deferred. Read the [version notes and limitations](VERSION.md).
+
+[![CyCLAPBridge Studio with its conversion form, language and theme selectors](assets/screenshots/studio-en.png)](assets/screenshots/studio-en.png)
 
 ## Create wrappers or integrate a host
 
-**Studio** creates a CMake project from a plugin or JSFX script. Choose the source and target formats, input, a new project directory and result name. **Créer le projet** generates sources; **Créer et compiler** also compiles on a background thread. **Ouvrir le résultat** opens the artifacts. Studio currently uses French labels; F1 opens the bilingual manual.
+**Studio** creates a CMake project from a plugin or JSFX script. Choose the source and target formats, input, a new project directory and result name. **Create project** generates sources; **Create and build** also compiles on a background thread. **Open result** opens the artifacts. Studio defaults to English and includes French, a theme selector and a shared file browser. F1 opens the manual in the selected language.
 
 The CLI also inspects modules. An optional resource directory preserves imports and assets. Keep the wrapper, `CyCLAPBridge-payload` and notices together. Conversion adapts an API around the original payload; it does not recompile that plugin or change its redistribution terms.
 
@@ -45,7 +47,7 @@ AAX is excluded. A JSFX script cannot load arbitrary native plugins without a RE
 
 ## Installation
 
-No application download is published yet. Build from source using **CMake 3.27+**, a **C++20 compiler**, and, for Windows, **Visual Studio 2022 Desktop development with C++** and a Windows SDK. Generated wrappers also require a C++ toolchain. Plugin folders are not modified automatically.
+No application download is published yet. Build from source using **CMake 3.27+**, a **C++20 compiler**, and, for Windows, **Visual Studio 2022 Desktop development with C++** and a Windows SDK. Studio requires an OpenGL 3.0 desktop driver on Windows/Linux (3.2 on macOS). Linux/macOS build presets and native package layouts are prepared; see [platform builds](docs/Platforms.md). Generated wrappers also require a C++ toolchain. Plugin folders are not modified automatically.
 
 After installation, launch `dist/CyCLAPBridge/bin/CyCLAPBridgeStudio.exe` or `cyclapbridge-cli.exe` in the same directory. Open `Documentation/Documentation.html` from the checkout, or `share/CyCLAPBridge/Documentation/Documentation.html` from an installation. Keep the whole manual directory. GitHub shows HTML source; read this manual locally after cloning/downloading.
 
@@ -54,14 +56,14 @@ After installation, launch `dist/CyCLAPBridge/bin/CyCLAPBridgeStudio.exe` or `cy
 ```sh
 git clone https://github.com/MrMybal/CyCLAPBridge.git
 cd CyCLAPBridge
-git submodule update --init third_party/clap-wrapper third_party/clap third_party/vst3sdk third_party/AudioUnitSDK
+git submodule update --init third_party/clap-wrapper third_party/clap third_party/vst3sdk third_party/AudioUnitSDK third_party/CyUI third_party/glfw third_party/imgui
 git -C third_party/vst3sdk submodule update --init base public.sdk pluginterfaces cmake
 cmake -S . -B build/release -G "Visual Studio 17 2022" -A x64
 cmake --build build/release --config Release
 cmake --install build/release --config Release --prefix dist/CyCLAPBridge
 ```
 
-Private repository access requires permission. SDKs are pinned; LV2/ysfx runtimes are retained snapshots. Configuration and conversion do not download dependencies. The default installation supplies the offline conversion sources.
+Private repository access requires permission. SDKs are pinned; LV2/ysfx runtimes are retained snapshots. Configuration and conversion do not download dependencies. The default installation supplies the offline conversion sources. The Windows distribution presets also require LLVM object tools (Visual Studio C++ Clang tools); see [platform prerequisites](docs/Platforms.md).
 
 <details>
 <summary>Static library integration and optional targets</summary>
@@ -75,7 +77,7 @@ Select an installation with `CMAKE_PREFIX_PATH`. Include `<cyclapbridge/Plugin.h
 
 Set `CYCLAPBRIDGE_BUILD_CLI=OFF`, `CYCLAPBRIDGE_BUILD_GUI=OFF` and `CYCLAPBRIDGE_INSTALL_BACKEND=OFF` for a library-only installation retaining headers, documentation and notices. Tests are opt-in through `CYCLAPBRIDGE_BUILD_TESTS=ON`.
 
-Studio is Windows-only. AUv2 needs macOS and AudioUnitSDK; AUv3 also needs Xcode and signing. Linux/Apple target validation is outstanding. The included manual needs no Node.js; regenerating it separately requires Node.js 22+ and the [.CyDocBuild instructions](https://github.com/MrMybal/CyCLAPBridge/blob/main/.CyDocBuild/README.md).
+Studio uses CyUI with GLFW/OpenGL; these targets are excluded from a library-only build. AUv2 needs macOS and AudioUnitSDK; AUv3 also needs Xcode and signing. Native Linux/Apple validation is outstanding. CPack produces native ZIP/tar.gz packages using [the platform presets](docs/Platforms.md). The included manual needs no Node.js; regenerating it separately requires Node.js 22+ and the [.CyDocBuild instructions](https://github.com/MrMybal/CyCLAPBridge/blob/main/.CyDocBuild/README.md).
 
 </details>
 
@@ -105,6 +107,8 @@ Original code uses [MIT](LICENSE). The pinned **VST3 SDK 3.8.0 build 66 is MIT**
 | [LV2](https://github.com/lv2/lv2), [Lilv](https://github.com/lv2/lilv), [Serd](https://github.com/drobilla/serd), [Sord](https://github.com/drobilla/sord), [Sratom](https://github.com/lv2/sratom), [Zix](https://github.com/drobilla/zix) | [ISC notices](third_party/licenses/) | Static discovery, metadata and LV2 hosting |
 | [ysfx](https://github.com/jpcima/ysfx), WDL/LICE and embedded components | [Apache-2.0, Zlib, MIT/ISC and component terms](third_party/licenses/ysfx.txt); parser GPL-2.0-or-later **with Bison-exception-2.2** | JSFX audio/Windows `@gfx`; parser exception permits a separate larger-work license |
 | fmt and PreSonus declarations in clap-wrapper | [MIT and public-domain notices](THIRD_PARTY.md) | Wrapper formatting/interfaces |
+| [CyUI](https://github.com/MrMybal/CyUI), [Dear ImGui](https://github.com/ocornut/imgui), [GLFW](https://github.com/glfw/glfw) | MIT / zlib, [pinned terms](THIRD_PARTY.md) | Studio only; one ImGui target, Core/FilePicker and native window/OpenGL backends |
+| [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) | SIL OFL 1.1, [retained notice](https://github.com/MrMybal/CyUI/blob/7019916ac1de987f86cef43b54a8f16fb0c6c9fc/third_party/jetbrains-mono/OFL.txt) | Font embedded by CyUI; Studio only |
 | [CyDoc](https://github.com/MrMybal/CyDoc) | [MIT](Documentation/DocData/licenses/CyDoc.txt) | Separate offline manual; no C++ runtime dependency |
 | [marked](https://github.com/markedjs/marked), [PrismJS](https://github.com/PrismJS/prism), [esbuild](https://github.com/evanw/esbuild) | [MIT notices](Documentation/DocData/licenses/) | Documentation generation only |
 

@@ -5,17 +5,21 @@ description: Choisir une source, conserver ses ressources et compiler un nouveau
 section: Manuel
 parent: overview
 order: 10
-sourceRevision: 1
+sourceRevision: 2
 ---
+
+```image
+{"id":"studio-interface","src":"assets/studio-fr.png","alt":"Formulaire Studio avec sélection des formats source et cible","controls":"minimal"}
+```
 
 ## Choisir l’entrée {#input}
 
 1. Ouvrir Studio et sélectionner le format source à gauche et le format cible à droite.
-2. Utiliser **Fichier…** pour un fichier de plugin ou une source JSFX, ou **Bundle…** pour un dossier LV2/VST3/AU.
+2. Utiliser **Fichier** pour un fichier de plugin ou une source JSFX, ou **Bundle** pour un dossier LV2/VST3/AU.
 3. Choisir un nouveau dossier de projet et saisir le nom du wrapper. Les dossiers de projet existants sont refusés pour éviter d’écraser des données.
 4. Conserver le dossier des composants CyCLAPBridge détecté ou choisir le dossier installé contenant `third_party` et `templates`.
 
-L’application Windows peut générer des projets Apple, mais compiler des Audio Units demande macOS. Consulter [Formats](doc:formats) avant de choisir une direction.
+Studio peut générer des projets Apple ; les compiler demande macOS, et AUv3 demande Xcode. Sous Windows/Linux, utiliser Créer le projet pour ces cibles ; Créer et compiler est indisponible. Consulter [Formats](doc:formats) avant de choisir une direction.
 
 ## Inclure les ressources {#resources}
 
@@ -30,3 +34,7 @@ Après réussite, **Ouvrir le résultat** ouvre le dossier des artefacts. Garder
 ## Choisir un plugin dans un module {#selection}
 
 Studio utilise le premier plugin compatible d’un module multiple. Utiliser la [CLI](doc:cli#selection) avec `--plugin-id` lorsqu’un ID ou une URI précis est nécessaire. La CLI expose aussi les générateurs CMake, l’architecture, la configuration et les options de bundle Apple.
+
+## Langue, thème et outils {#settings}
+
+Choisir l’anglais ou le français et un thème en haut. Les préférences sont conservées dans le dossier de configuration de l’utilisateur du système. Le navigateur de fichiers commun utilise les racines locales ; les chemins complets peuvent aussi être collés dans les champs. Les options avancées sélectionnent les sources des composants, l’ID du plugin, l’exécutable CMake, le générateur, l’architecture et la configuration. CMake doit être installé ; les emplacements Windows/macOS courants sont détectés et un exécutable personnalisé peut être choisi.

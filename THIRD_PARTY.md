@@ -64,3 +64,20 @@ The reader is distributed with the exact CyDoc notice in Documentation/DocData/l
 Generation uses marked (MIT), PrismJS (MIT) and esbuild (MIT), whose notices are
 also retained there. Node.js 22+ is a generation prerequisite only. No JavaScript
 runtime or documentation generator is linked into the C++ library or Studio.
+
+## Optional Studio dependencies
+
+| Component | Repository | Pinned revision | License / scope |
+| --- | --- | --- | --- |
+| CyUI 1.2.0 | https://github.com/MrMybal/CyUI | 7019916ac1de987f86cef43b54a8f16fb0c6c9fc | MIT; Core and FilePicker only |
+| GLFW 3.4 | https://github.com/glfw/glfw | 7b6aead9fb88b3623e3b3725ebb42670cbe4c579 | zlib; native windows, input and OpenGL context |
+| Dear ImGui 1.93.1 WIP, docking | https://github.com/ocornut/imgui | cf53467ab0db7a783f04b32dd9160e6aa5b720ef | MIT and embedded stb terms; one target supplied to CyUI |
+| JetBrains Mono Regular 2.304 | CyUI's retained font snapshot | Same CyUI revision | SIL OFL 1.1; font embedded by Core |
+
+These are separate Studio-only dependencies. The audio library exports no CyUI,
+GLFW or ImGui requirement. CyUI's own bundled ImGui is not built; no upstream
+source is modified. Exact notices, including embedded stb headers and the font's
+OFL, are installed under licenses/studio in the application data directory.
+They are not linked into generated audio wrappers or copied into the conversion
+SDK. Linux uses the prepared X11 backend; Apple uses Cocoa/OpenGL 3.2 sources.
+Native Linux/macOS validation remains outstanding. See docs/Platforms.md.

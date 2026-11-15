@@ -64,3 +64,12 @@ and offline-rendering policy belong to the DAW. The prepared adapter contract
 applies inside the selected process; foreign plugin code retains its own behavior.
 Process isolation and OS privilege restrictions are guarantees of the DAW's
 implementation and are not supplied by the adapter library.
+
+## Optional portable Studio
+
+Studio is a separate consumer of the static library. Its CyUI Core/FilePicker,
+single pinned ImGui target and GLFW/OpenGL backend do not enter the library's
+public headers or CMake export. The same interface and background conversion
+controller serve Windows, Linux X11 and macOS. Platform helpers own local help
+URLs, filesystem roots and user preferences. The DAW's process-management
+responsibilities are unchanged. See [platform build layouts](Platforms.md).

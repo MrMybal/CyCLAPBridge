@@ -1,0 +1,349 @@
+// SPDX-License-Identifier: MIT
+#include "AppPaths.h"
+#include "StudioModel.h"
+#include "StudioPlatform.h"
+#include <cyui/Core.h>
+#include <cyui/modules/FilePicker.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_stdlib.h>
+#define GL_SILENCE_DEPRECATION
+#include <GLFW/glfw3.h>
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <fstream>
+#include <future>
+#include <iostream>
+#include <thread>
+#ifdef _WIN32
+#include <windows.h>
+#include <shellapi.h>
+#endif
+namespace {
+namespace fs=std::filesystem;
+using namespace cybridge;
+using namespace cybridge::studio;
+constexpr std::array sources{Format::clap,Format::vst3,Format::lv2,Format::jsfx,Format::auv2};
+constexpr std::array targets{Format::vst3,Format::clap,Format::lv2,Format::auv2,Format::auv3};
+void translations() {
+    cyui::registerTranslations("fr",{
+        {"Plugin wrappers and format conversion","Wrappers de plugins et conversion de formats"},
+        {"Language","Langue"},{"Theme","Thème"},{"Conversion","Conversion"},
+        {"Source format","Format source"},{"Target format","Format cible"},
+        {"Input plugin","Plugin d’entrée"},{"File","Fichier"},{"Bundle","Bundle"},
+        {"New project folder","Nouveau dossier du projet"},{"Output name","Nom du résultat"},
+        {"Resources and imports","Ressources et imports"},{"Browse","Parcourir"},
+        {"Advanced options","Options avancées"},{"Component folder","Dossier des composants"},
+        {"Plugin ID (optional)","ID du plugin (facultatif)"},{"CMake executable","Exécutable CMake"},
+        {"Generator (optional)","Générateur (facultatif)"},{"Architecture (optional)","Architecture (facultative)"},
+        {"Configuration","Configuration"},{"Create project","Créer le projet"},
+        {"Create and build","Créer et compiler"},{"Open result","Ouvrir le résultat"},
+        {"Build log","Journal de compilation"},{"Copy log","Copier le journal"},
+        {"Ready","Prêt"},{"Creating project…","Création du projet…"},
+        {"Building…","Compilation…"},{"Completed","Terminé"},{"Failed","Échec"},
+        {"No build output yet.","Aucune sortie de compilation pour le moment."},
+        {"Source and target must be different.","La source et la cible doivent être différentes."},
+        {"Keep the wrapper, payload, resources and notices together.","Conservez ensemble le wrapper, le payload, les ressources et les notices."},
+        {"Apple projects require macOS; AUv3 also requires Xcode. Apple validation is deferred.","Les projets Apple demandent macOS ; AUv3 demande aussi Xcode. La validation Apple est reportée."},
+        {"Choose a file or folder","Choisir un fichier ou dossier"},{"Location","Emplacement"},
+        {"Help (F1)","Aide (F1)"},{"Cannot open the local manual.","Impossible d’ouvrir le manuel local."},
+        {"Cannot open the result folder.","Impossible d’ouvrir le dossier du résultat."},
+        {"Build in progress. Wait before closing.","Compilation en cours. Attendez avant de fermer."},
+        {"Mid grey","Gris moyen"},{"Light grey","Gris clair"}
+    });
+}
+std::string label(const char* text){return cyui::trLabel(text);}
+void text(const char* value){ImGui::TextWrapped("%s",cyui::tr(value).c_str());}
+
+struct Picker {
+    enum class Field { input, output, resources, backend } field{};
+    bool open=false;
+    cyui::FilePickerState state;
+    cyui::FilePickerOptions options;
+    cyui::FileListing listing;
+    std::future<cyui::FileListing> work;
+    std::string pending;
+    std::vector<std::string> volumes=roots();
+    void begin(Field destination,const std::string& value,bool directory) {
+        field=destination;open=true;state={};listing={};
+        auto path=value.empty()?fs::current_path():fs::absolute(pathFromText(value));
+        if(!value.empty()&&(destination==Field::input||destination==Field::output))path=path.parent_path();
+        if(path.empty())path=fs::current_path();
+        state.directory=pathText(path);state.pathText=state.directory;
+        options={};options.mode=directory?cyui::FilePickerMode::directory:cyui::FilePickerMode::openFile;
+        options.root=pathText(path.root_path());
+        if(options.root.empty())options.root=volumes.empty()?"/":volumes.front();
+        if(!directory)options.filters={{"CLAP / VST3 / JSFX",{"clap","vst3","jsfx","txt"}},{"All files",{}}};
+    }
+    void update() {
+        using namespace std::chrono_literals;
+        if(work.valid()&&work.wait_for(0s)==std::future_status::ready) {
+            auto result=work.get();if(result.directory==state.directory)listing=std::move(result);
+        }
+        if(!work.valid()&&listing.directory!=state.directory) {
+            pending=state.directory;listing={};listing.directory=pending;listing.loading=true;
+            work=std::async(std::launch::async,[directory=pending]{
+                cyui::FileListing result;result.directory=directory;
+                try {
+                    std::uint64_t id=1;
+                    for(const auto& entry:fs::directory_iterator(pathFromText(directory),fs::directory_options::skip_permission_denied)) {
+                        std::error_code error;const bool folder=entry.is_directory(error);
+                        auto bytes=folder?0:entry.file_size(error);
+                        result.entries.push_back({id++,pathText(entry.path().filename()),folder,error?0:bytes,{}});
+                    }
+                    std::sort(result.entries.begin(),result.entries.end(),[](const auto& a,const auto& b){return a.directory!=b.directory?a.directory>b.directory:a.name<b.name;});
+                }catch(const std::exception& e){result.error=e.what();}
+                return result;
+            });
+        }
+    }
+    std::string draw() {
+        if(!open)return {};
+        std::string accepted;
+        if(cyui::beginModal(label("Choose a file or folder").c_str(),&open,820)) {
+            if(volumes.size()>1&&ImGui::BeginCombo(label("Location").c_str(),options.root.c_str())) {
+                for(const auto& volume:volumes)if(ImGui::Selectable(volume.c_str(),volume==options.root)){
+                    options.root=volume;state={};state.directory=volume;state.pathText=volume;
+                }
+                ImGui::EndCombo();
+            }
+            update();
+            auto result=cyui::filePicker("##filesystem",state,listing,cyui::dp(0,460),options);
+            if(result.accepted&&!result.paths.empty()){accepted=result.paths.front();open=false;}
+            if(result.cancelled)open=false;
+            cyui::endModal();
+        }
+        return accepted;
+    }
+};
+struct Studio {
+    Model model;
+    Picker picker;
+    int source=0,target=0;
+    std::string input,output,name,resources,pluginId;
+    std::string backend=pathText(cybridge::app::backendRoot());
+    BuildOptions build=cybridge::app::buildOptions();
+    std::string cmake=pathText(build.cmake);
+    void help() {
+        auto path=cybridge::app::dataRoot()/"Documentation/Documentation.html";
+        auto url=fs::is_regular_file(path)?fileUrl(path):std::string{};
+        if(url.empty()||!openUrl(url+"#/"+cyui::locale()+"/studio/input"))
+            cyui::notify(cyui::tr("Cannot open the local manual.").c_str(),cyui::Tone::error);
+    }
+    void picked(const std::string& path) {
+        if(path.empty())return;
+        switch(picker.field) {
+        case Picker::Field::input:
+            input=path;name=pathText(pathFromText(path).stem());
+            if(output.empty())output=pathText(pathFromText(path).parent_path()/(pathFromText(name+"-"+formatName(targets[target])+"-project")));
+            break;
+        case Picker::Field::output:output=pathText(pathFromText(path)/pathFromText((name.empty()?"Plugin":name)+"-"+formatName(targets[target])+"-project"));break;
+        case Picker::Field::resources:resources=path;break;
+        case Picker::Field::backend:backend=path;break;
+        }
+    }
+    void pathField(const char* caption,std::string& value,Picker::Field field,bool bundle=false) {
+        cyui::property(cyui::tr(caption).c_str());
+        const float reserve=cyui::dp(bundle?152.f:88.f);
+        ImGui::SetNextItemWidth(std::max(cyui::dp(80.f),ImGui::GetContentRegionAvail().x-reserve));
+        ImGui::InputText((std::string("##")+caption).c_str(),&value);
+        ImGui::SameLine();ImGui::PushID(caption);
+        if(cyui::button(label(bundle?"File":"Browse").c_str()))picker.begin(field,value,!bundle);
+        if(bundle){ImGui::SameLine();if(cyui::button(label("Bundle").c_str()))picker.begin(field,value,true);}
+        ImGui::PopID();
+    }
+    void start(bool compile) {
+        try {
+            ConversionRequest request;request.source=sources[source];request.target=targets[target];
+            request.input=pathFromText(input);request.projectDirectory=pathFromText(output);request.outputName=name;
+            request.resources=pathFromText(resources);request.pluginId=pluginId;request.backend=backendFromRoot(pathFromText(backend));
+            build.cmake=pathFromText(cmake);
+#ifdef __APPLE__
+            if(request.target==Format::auv3&&build.generator.empty())build.generator="Xcode";
+#endif
+            model.start(std::move(request),compile,build);
+        }catch(const std::exception& e){cyui::notify(e.what(),cyui::Tone::error);}
+    }
+    void draw() {
+        auto* viewport=ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::Begin("CyCLAPBridge Studio",nullptr,ImGuiWindowFlags_NoDecoration|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings);
+        cyui::heading("CyCLAPBridge Studio",1);
+        cyui::textDim("%s",cyui::tr("Plugin wrappers and format conversion").c_str());
+        cyui::badge("0.2.0",cyui::Tone::neutral);ImGui::SameLine();
+        ImGui::SetNextItemWidth(cyui::dp(150));
+        if(ImGui::BeginCombo(label("Language").c_str(),cyui::locale()=="fr"?"Français":"English")) {
+            for(auto entry:std::array<std::pair<const char*,const char*>,2>{{{"en","English"},{"fr","Français"}}})
+                if(ImGui::Selectable(entry.second,cyui::locale()==entry.first))cyui::setLocale(entry.first);
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();ImGui::SetNextItemWidth(cyui::dp(165));
+        if(ImGui::BeginCombo(label("Theme").c_str(),cyui::currentThemeKey().c_str())) {
+            for(const auto& theme:cyui::builtInThemes())if(ImGui::Selectable(cyui::tr(theme.name.c_str()).c_str(),theme.key==cyui::currentThemeKey()))cyui::setTheme(theme.key.c_str());
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();if(cyui::button(label("Help (F1)").c_str())||ImGui::IsKeyPressed(ImGuiKey_F1))help();
+        cyui::space(10);
+        if(cyui::beginCard("##conversion",cyui::tr("Conversion").c_str())) {
+            ImGui::BeginDisabled(model.busy());
+            if(cyui::beginProperties("##fields",180)) {
+                cyui::property(cyui::tr("Source format").c_str());
+                if(ImGui::BeginCombo("##source",formatName(sources[source]).c_str())){for(int i=0;i<static_cast<int>(sources.size());++i)if(ImGui::Selectable(formatName(sources[i]).c_str(),i==source))source=i;ImGui::EndCombo();}
+                cyui::property(cyui::tr("Target format").c_str());
+                if(ImGui::BeginCombo("##target",formatName(targets[target]).c_str())){for(int i=0;i<static_cast<int>(targets.size());++i)if(ImGui::Selectable(formatName(targets[i]).c_str(),i==target))target=i;ImGui::EndCombo();}
+                pathField("Input plugin",input,Picker::Field::input,true);
+                pathField("New project folder",output,Picker::Field::output);
+                cyui::property(cyui::tr("Output name").c_str());ImGui::InputText("##name",&name);
+                pathField("Resources and imports",resources,Picker::Field::resources);
+                cyui::endProperties();
+            }
+            if(cyui::beginSection(label("Advanced options").c_str(),false)) {
+                if(cyui::beginProperties("##advanced",180)) {
+                    pathField("Component folder",backend,Picker::Field::backend);
+                    for(auto field:std::array<std::pair<const char*,std::string*>,5>{{{"Plugin ID (optional)",&pluginId},{"CMake executable",&cmake},{"Generator (optional)",&build.generator},{"Architecture (optional)",&build.architecture},{"Configuration",&build.configuration}}}){
+                        cyui::property(cyui::tr(field.first).c_str());ImGui::InputText((std::string("##")+field.first).c_str(),field.second);
+                    }
+                    cyui::endProperties();
+                }
+                cyui::endSection();
+            }
+            ImGui::EndDisabled();
+        }
+        cyui::endCard();
+        bool apple=sources[source]==Format::auv2||targets[target]==Format::auv2||targets[target]==Format::auv3;
+        if(apple)cyui::callout(cyui::Tone::warning,cyui::tr("Apple projects require macOS; AUv3 also requires Xcode. Apple validation is deferred.").c_str());
+        const bool identical=sources[source]==targets[target];
+        if(identical)cyui::callout(cyui::Tone::warning,cyui::tr("Source and target must be different.").c_str());
+        bool buildAllowed=true;
+#ifndef __APPLE__
+        buildAllowed=!apple;
+#endif
+        const bool invalid=model.busy()||input.empty()||output.empty()||identical;
+        ImGui::BeginDisabled(invalid||!buildAllowed);
+        if(cyui::primaryButton(label("Create and build").c_str()))start(true);
+        ImGui::EndDisabled();ImGui::SameLine();ImGui::BeginDisabled(invalid);
+        if(cyui::button(label("Create project").c_str()))start(false);
+        ImGui::EndDisabled();ImGui::SameLine();
+        auto snapshot=model.snapshot();
+        ImGui::BeginDisabled(model.busy()||snapshot.phase!=Phase::succeeded||snapshot.artifacts.empty());
+        if(cyui::button(label("Open result").c_str())&&!openUrl(fileUrl(snapshot.artifacts)))cyui::notify(cyui::tr("Cannot open the result folder.").c_str(),cyui::Tone::error);
+        ImGui::EndDisabled();
+        const char* phase="Ready";
+        switch(snapshot.phase){case Phase::generating:phase="Creating project…";break;case Phase::building:phase="Building…";break;case Phase::succeeded:phase="Completed";break;case Phase::failed:phase="Failed";break;default:break;}
+        cyui::space(8);cyui::badge(cyui::tr(phase).c_str(),snapshot.phase==Phase::failed?cyui::Tone::error:snapshot.phase==Phase::succeeded?cyui::Tone::success:cyui::Tone::neutral);
+        if(model.busy())cyui::progressBar(-1,cyui::dp(-1,4));
+        if(!snapshot.error.empty())cyui::callout(cyui::Tone::error,snapshot.error.c_str());
+        cyui::textDim("%s",cyui::tr("Keep the wrapper, payload, resources and notices together.").c_str());
+        cyui::sectionTitle(cyui::tr("Build log").c_str());
+        if(!snapshot.log.empty()){if(cyui::button(label("Copy log").c_str()))ImGui::SetClipboardText(snapshot.log.c_str());}
+        if(snapshot.log.empty())snapshot.log=cyui::tr("No build output yet.");
+        ImGui::InputTextMultiline("##log",snapshot.log.data(),snapshot.log.size()+1,{ImGui::GetContentRegionAvail().x,std::max(cyui::dp(130.f),ImGui::GetContentRegionAvail().y-cyui::dp(8.f))},ImGuiInputTextFlags_ReadOnly);
+        picked(picker.draw());
+        ImGui::End();cyui::renderNotifications();
+    }
+};
+void preferences(bool save) {
+    auto path=settingsFile();if(path.empty())return;
+    if(save) {
+        std::error_code error;fs::create_directories(path.parent_path(),error);if(error)return;
+        std::ofstream out(path);out<<"locale="<<cyui::locale()<<"\ntheme="<<cyui::currentThemeKey()<<'\n';
+    }else {
+        std::ifstream in(path);std::string line;
+        while(std::getline(in,line)) {
+            if(line.rfind("locale=",0)==0)cyui::setLocale(line.substr(7).c_str());
+            if(line.rfind("theme=",0)==0)cyui::setTheme(line.substr(6).c_str());
+        }
+    }
+}
+bool capture(const fs::path& path,int width,int height) {
+    if(width<=0||height<=0||width>8192||height>8192)return false;
+    const auto stride=(static_cast<std::uint32_t>(width)*3+3)&~3u;
+    std::vector<unsigned char> rgb(static_cast<std::size_t>(width)*height*3),bgr(static_cast<std::size_t>(stride)*height);
+    glPixelStorei(GL_PACK_ALIGNMENT,1);glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgb.data());
+    for(int y=0;y<height;++y)for(int x=0;x<width;++x){auto i=(static_cast<std::size_t>(y)*width+x)*3,j=static_cast<std::size_t>(y)*stride+x*3;bgr[j]=rgb[i+2];bgr[j+1]=rgb[i+1];bgr[j+2]=rgb[i];}
+    std::ofstream out(path,std::ios::binary);auto put=[&out](std::uint32_t n,int bytes){for(int i=0;i<bytes;++i)out.put(static_cast<char>(n>>(8*i)));};
+    out.write("BM",2);put(54+static_cast<std::uint32_t>(bgr.size()),4);put(0,4);put(54,4);put(40,4);put(width,4);put(height,4);put(1,2);put(24,2);put(0,4);put(static_cast<std::uint32_t>(bgr.size()),4);for(int i=0;i<4;++i)put(0,4);
+    out.write(reinterpret_cast<const char*>(bgr.data()),static_cast<std::streamsize>(bgr.size()));return static_cast<bool>(out);
+}
+int run(const std::vector<std::string>& args) {
+    bool smoke=false,renderTest=false;std::string theme,locale;fs::path image;
+    for(std::size_t i=0;i<args.size();++i) {
+        if(args[i]=="--smoke-test")smoke=true;
+        else if(args[i]=="--render-test")renderTest=true;
+        else if((args[i]=="--capture"||args[i]=="--theme"||args[i]=="--locale")&&i+1<args.size()) {
+            auto key=args[i++];if(key=="--capture")image=pathFromText(args[i]);else if(key=="--theme")theme=args[i];else locale=args[i];
+        }else throw std::runtime_error("Unknown or incomplete Studio option: "+args[i]);
+    }
+    IMGUI_CHECKVERSION();ImGui::CreateContext();
+    struct Context{~Context(){ImGui::DestroyContext();}}context;
+    auto& io=ImGui::GetIO();io.IniFilename=nullptr;io.ConfigFlags|=ImGuiConfigFlags_NavEnableKeyboard;
+    translations();cyui::Config config;config.density=cyui::Density::comfortable;cyui::apply(config);
+    cyui::FontConfig fonts;fonts.icons=false;cyui::loadFonts(fonts);
+    if(!smoke&&!renderTest&&image.empty())preferences(false);
+    if(!theme.empty()&&!cyui::setTheme(theme.c_str()))throw std::runtime_error("Unknown theme");
+    if(!locale.empty()&&!cyui::setLocale(locale.c_str()))throw std::runtime_error("Unknown language");
+    Studio studio;
+    if(smoke) {
+        unsigned char* pixels;int w,h;io.Fonts->GetTexDataAsRGBA32(&pixels,&w,&h);
+        io.DisplaySize={1280,900};io.DeltaTime=1.f/60;
+        for(const auto& skin:cyui::builtInThemes())for(const auto* language:{"en","fr"}) {
+            cyui::setTheme(skin.key.c_str());cyui::setLocale(language);ImGui::NewFrame();studio.draw();ImGui::Render();
+            if(!ImGui::GetDrawData()||ImGui::GetDrawData()->TotalVtxCount==0)return 3;
+        }
+        return 0;
+    }
+    glfwSetErrorCallback([](int code,const char* message){std::cerr<<"GLFW "<<code<<": "<<message<<'\n';});
+    if(!glfwInit())return 4;
+    struct Glfw{~Glfw(){glfwTerminate();}}glfw;
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT,GL_TRUE);
+    const char* glsl="#version 150";
+#else
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,0);
+    const char* glsl="#version 130";
+#endif
+    if(renderTest||!image.empty())glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
+    auto* window=glfwCreateWindow(1100,880,"CyCLAPBridge Studio",nullptr,nullptr);if(!window)return 5;
+    struct Window{GLFWwindow* p;~Window(){glfwDestroyWindow(p);}}windowOwner{window};
+    glfwSetWindowSizeLimits(window,760,720,GLFW_DONT_CARE,GLFW_DONT_CARE);
+    glfwMakeContextCurrent(window);glfwSwapInterval(1);
+    if(!ImGui_ImplGlfw_InitForOpenGL(window,true))return 6;
+    struct GlfwBackend{~GlfwBackend(){ImGui_ImplGlfw_Shutdown();}}glfwBackend;
+    if(!ImGui_ImplOpenGL3_Init(glsl))return 7;
+    struct Renderer{~Renderer(){ImGui_ImplOpenGL3_Shutdown();}}renderer;
+    int frames=0;bool wrote=image.empty();
+    while(!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        float x,y;glfwGetWindowContentScale(window,&x,&y);cyui::applyDpi(x);
+        ImGui_ImplOpenGL3_NewFrame();ImGui_ImplGlfw_NewFrame();ImGui::NewFrame();studio.draw();ImGui::Render();
+        int width,height;glfwGetFramebufferSize(window,&width,&height);
+        if(width>0&&height>0){
+            glViewport(0,0,width,height);auto color=cyui::vec(cyui::palette().bg0);glClearColor(color.x,color.y,color.z,1);glClear(GL_COLOR_BUFFER_BIT);
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            if(++frames>=5&&!image.empty())wrote=capture(image,width,height);
+            glfwSwapBuffers(window);
+        }else std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        if((renderTest||!image.empty())&&frames>=5)break;
+        if(glfwWindowShouldClose(window)&&studio.model.busy()){
+            glfwSetWindowShouldClose(window,GLFW_FALSE);cyui::notify(cyui::tr("Build in progress. Wait before closing.").c_str(),cyui::Tone::warning);
+        }
+    }
+    if(!renderTest&&image.empty())preferences(true);
+    return wrote?0:8;
+}
+}
+#ifdef _WIN32
+int WINAPI wWinMain(HINSTANCE,HINSTANCE,PWSTR,int) {
+    int argc=0;auto** argv=CommandLineToArgvW(GetCommandLineW(),&argc);std::vector<std::string> args;
+    if(!argv)return 1;
+    for(int i=1;i<argc;++i){auto value=fs::path(argv[i]).u8string();args.emplace_back(reinterpret_cast<const char*>(value.data()),value.size());}
+    LocalFree(argv);
+    try{return run(args);}catch(const std::exception& e){if(args.empty())MessageBoxA(nullptr,e.what(),"CyCLAPBridge Studio",MB_OK|MB_ICONERROR);else std::cerr<<e.what()<<'\n';return 1;}
+}
+#else
+int main(int argc,char** argv) {
+    try{return run(std::vector<std::string>(argv+1,argv+argc));}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
+}
+#endif

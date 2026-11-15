@@ -5,7 +5,7 @@ description: Understand which input/output directions and native editors are rep
 section: Manual
 parent: overview
 order: 30
-revision: 1
+revision: 2
 ---
 
 ## Conversion matrix {#matrix}
@@ -19,7 +19,7 @@ revision: 1
 | AUv2 | Apple host adapter | clap-wrapper | macOS required; source integration unvalidated |
 | AUv3 | No arbitrary-file input | Extension and container | macOS/Xcode/signing required; unvalidated |
 
-Apple implementation is available in source, with native testing deferred because the owner has no Mac. Linux builds remain unvalidated. Studio itself is Windows-only. AAX has no input, output or SDK option.
+Apple implementation is available in source, with native testing deferred because the owner has no Mac. Linux builds remain unvalidated. Studio shares its CyUI interface across the three platforms; native Linux/macOS builds are prepared but remain unvalidated. AAX has no input, output or SDK option.
 
 ## JSFX {#jsfx}
 

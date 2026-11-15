@@ -5,7 +5,7 @@ description: Comprendre les directions d’entrée/sortie et les éditeurs natif
 section: Manuel
 parent: overview
 order: 30
-sourceRevision: 1
+sourceRevision: 2
 ---
 
 ## Matrice de conversion {#matrix}
@@ -19,7 +19,7 @@ sourceRevision: 1
 | AUv2 | Adaptateur hôte Apple | clap-wrapper | macOS requis ; intégration source non validée |
 | AUv3 | Pas d’entrée de fichier arbitraire | Extension et conteneur | macOS/Xcode/signature requis ; non validé |
 
-L’implémentation Apple est disponible dans les sources ; les tests natifs sont reportés car le propriétaire n’a pas de Mac. Les compilations Linux restent non validées. Studio est réservé à Windows. AAX ne possède aucune option d’entrée, de sortie ou de SDK.
+L’implémentation Apple est disponible dans les sources ; les tests natifs sont reportés car le propriétaire n’a pas de Mac. Les compilations Linux restent non validées. Studio partage son interface CyUI entre les trois plateformes ; les compilations natives Linux/macOS sont préparées mais restent non validées. AAX ne possède aucune option d’entrée, de sortie ou de SDK.
 
 ## JSFX {#jsfx}
 

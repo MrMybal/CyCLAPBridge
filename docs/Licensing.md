@@ -34,6 +34,9 @@ licences et copyrights, sans changement de licence :
 | LV2, Lilv, Serd, Sord, Sratom et Zix | ISC |
 | WDL et autres composants embarqués de ysfx | Zlib, MIT, ISC ou termes propres conservés |
 | Parseur EEL2 généré | GPL-2.0-or-later avec Bison-exception-2.2 |
+| CyUI et Dear ImGui, pour Studio seulement | MIT ; notices embarquées stb conservées |
+| GLFW, pour Studio seulement | Zlib |
+| JetBrains Mono embarquée par CyUI | SIL Open Font License 1.1 |
 
 Le parseur conserve explicitement l'exception Bison : un programme plus vaste
 qui contient ce squelette peut être distribué sous les termes de son choix,
@@ -49,6 +52,12 @@ des sources, de la bibliothèque statique ou de binaires qui l'embarquent.
 L'installation fournit ces notices dans `share/CyCLAPBridge/licenses`, y compris
 avec `CYCLAPBRIDGE_INSTALL_BACKEND=OFF` pour une intégration DAW sans les sources
 des SDK de conversion.
+
+Les dépendances graphiques restent propres à Studio. Leurs notices sont installées
+dans `licenses/studio` sous le dossier de données de l’application ; sur macOS,
+ce dossier se trouve dans les ressources du bundle `.app`. Elles ne sont pas liées
+à la bibliothèque audio seule. Les révisions et la version de la police sont
+précisées dans `THIRD_PARTY.md`.
 
 ## Wrappers et plugins sélectionnés
 

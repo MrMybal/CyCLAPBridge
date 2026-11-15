@@ -10,3 +10,12 @@
 [submodule "third_party/AudioUnitSDK"]
 	path = third_party/AudioUnitSDK
 	url = https://github.com/apple/AudioUnitSDK.git
+[submodule "third_party/CyUI"]
+	path = third_party/CyUI
+	url = https://github.com/MrMybal/CyUI.git
+[submodule "third_party/glfw"]
+	path = third_party/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "third_party/imgui"]
+	path = third_party/imgui
+	url = https://github.com/ocornut/imgui.git

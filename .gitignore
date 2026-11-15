@@ -4,6 +4,11 @@
 /generated/
 /.vs/
 CMakeUserPresets.json
+/AGENTS.md
+/CLAUDE.md
+/CODEX.md
+/.agents/
+/.codex/
 /.CyDocBuild/node_modules/
 /.CyDocBuild/internal/
 /.CyDocBuild/*.log

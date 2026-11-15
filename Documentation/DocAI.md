@@ -13,7 +13,9 @@ This file is for assistants working on the application's documentation. The huma
     "en",
     "fr"
   ],
-  "modules": []
+  "modules": [
+    "image"
+  ]
 }
 ```
 

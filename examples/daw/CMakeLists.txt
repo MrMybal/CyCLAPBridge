@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
 project(CyCLAPBridgeConsumer LANGUAGES CXX)
-find_package(CyCLAPBridge 0.1 CONFIG REQUIRED)
+find_package(CyCLAPBridge 0.2 CONFIG REQUIRED)
 add_executable(cybridge-daw-example main.cpp)
 target_link_libraries(cybridge-daw-example PRIVATE CyCLAPBridge::CyCLAPBridge)
