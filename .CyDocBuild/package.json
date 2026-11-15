@@ -6,7 +6,8 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "build": "cydoc build cydoc.config.json && node notices.mjs",
-    "check": "cydoc check cydoc.config.json && node notices.mjs"
+    "check": "cydoc check cydoc.config.json && node notices.mjs",
+    "site": "npm run check && node prepare-pages.mjs"
   },
   "devDependencies": { "cydoc": "file:vendor/cydoc-0.1.0.tgz" }
 }

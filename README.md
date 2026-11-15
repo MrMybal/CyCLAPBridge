@@ -1,7 +1,8 @@
 <table width="100%">
   <tr>
     <td width="300" align="left" valign="top">
-      <a href="Documentation/Documentation.html#/en/overview">Offline manual</a><br>
+      <a href="https://mrmybal.github.io/CyCLAPBridge/#/en/overview">Online manual</a><br>
+      <a href="Documentation/Documentation.html#/en/overview">Offline HTML</a><br>
       <a href="https://github.com/MrMybal/CyCLAPBridge">Repository</a><br><br>
       <sub>README</sub><br><a href="README.md">English</a> · <a href="README.fr.md">Français</a>
     </td>
@@ -49,7 +50,7 @@ AAX is excluded. A JSFX script cannot load arbitrary native plugins without a RE
 
 Download the [Windows x64 application ZIP](https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.0/CyCLAPBridgeStudio-0.2.0-Windows-AMD64.zip) from the [0.2.0 pre-release](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.0). Studio needs an OpenGL 3.0 desktop driver. Plugin conversion requires **CMake 3.27+**, **Visual Studio 2022 Desktop development with C++** and a Windows SDK; the application itself is already compiled. Linux/macOS binaries remain pending native validation; see [platform builds](docs/Platforms.md). Plugin folders are not modified automatically.
 
-The Studio application ZIP has `CyCLAPBridgeStudio.exe` directly at its root on Windows. Extract the complete ZIP and launch it; keep its `Resources` folder beside it. The application is already compiled. Format conversion still needs CMake and the native C++ toolchain described above. F1 opens the included manual. The separate developer installation provides `bin/cyclapbridge-cli.exe`, headers and the static library. Open `Documentation/Documentation.html` from the checkout, or `share/CyCLAPBridge/Documentation/Documentation.html` from a developer installation. Keep the whole manual directory. GitHub shows HTML source; read this manual locally after cloning/downloading.
+The Studio application ZIP has `CyCLAPBridgeStudio.exe` directly at its root on Windows. Extract the complete ZIP and launch it; keep its `Resources` folder beside it. The application is already compiled. Format conversion still needs CMake and the native C++ toolchain described above. F1 opens the included manual. The separate developer installation provides `bin/cyclapbridge-cli.exe`, headers and the static library. Open `Documentation/Documentation.html` from the checkout, or `share/CyCLAPBridge/Documentation/Documentation.html` from a developer installation. Keep the whole manual directory. The [online manual](https://mrmybal.github.io/CyCLAPBridge/#/en/overview) opens the same reader in your browser; the included HTML remains available locally.
 
 ## Sources and build
 
@@ -63,7 +64,7 @@ cmake --build build/release --config Release
 cmake --install build/release --config Release --prefix dist/CyCLAPBridge
 ```
 
-Private repository access requires permission. SDKs are pinned; LV2/ysfx runtimes are retained snapshots. Configuration and conversion do not download dependencies. The default installation supplies the offline conversion sources. The Windows Studio preset links the MSVC runtime statically. Application packages are separate from the developer SDK; see [platform prerequisites](docs/Platforms.md).
+SDKs are pinned; LV2/ysfx runtimes are retained snapshots. Configuration and conversion do not download dependencies. The default installation supplies the offline conversion sources. The Windows Studio preset links the MSVC runtime statically. Application packages are separate from the developer SDK; see [platform prerequisites](docs/Platforms.md).
 
 <details>
 <summary>Static library integration and optional targets</summary>
@@ -73,7 +74,7 @@ find_package(CyCLAPBridge 0.2 CONFIG REQUIRED)
 target_link_libraries(MyDaw PRIVATE CyCLAPBridge::CyCLAPBridge)
 ```
 
-Select an installation with `CMAKE_PREFIX_PATH`. Include `<cyclapbridge/Plugin.h>` or `<cyclapbridge/Conversion.h>`; see the [DAW example](https://github.com/MrMybal/CyCLAPBridge/blob/main/examples/daw/main.cpp) and [library manual](Documentation/Documentation.html#/en/library).
+Select an installation with `CMAKE_PREFIX_PATH`. Include `<cyclapbridge/Plugin.h>` or `<cyclapbridge/Conversion.h>`; see the [DAW example](https://github.com/MrMybal/CyCLAPBridge/blob/main/examples/daw/main.cpp) and [library manual](https://mrmybal.github.io/CyCLAPBridge/#/en/library).
 
 Set `CYCLAPBRIDGE_BUILD_CLI=OFF`, `CYCLAPBRIDGE_BUILD_GUI=OFF` and `CYCLAPBRIDGE_INSTALL_BACKEND=OFF` for a library-only installation retaining headers, documentation and notices. Tests are opt-in through `CYCLAPBRIDGE_BUILD_TESTS=ON`.
 
@@ -91,7 +92,7 @@ cyclapbridge-cli convert --from jsfx --to vst3 --input "D:/Effects/Gain.jsfx" --
 cyclapbridge-cli build --project "D:/Exports/Gain-VST3"
 ```
 
-`--plugin-id` selects a CLAP ID, LV2 URI or VST3 class ID. Inspection executes plugin code. LV2 export loads the plugin in a metadata helper during compilation. See the [CLI manual](Documentation/Documentation.html#/en/cli).
+`--plugin-id` selects a CLAP ID, LV2 URI or VST3 class ID. Inspection executes plugin code. LV2 export loads the plugin in a metadata helper during compilation. See the [CLI manual](https://mrmybal.github.io/CyCLAPBridge/#/en/cli).
 
 ---
 
@@ -114,6 +115,6 @@ Original code uses [MIT](LICENSE). The pinned **VST3 SDK 3.8.0 build 66 is MIT**
 
 ## References
 
-- [English manual](Documentation/Documentation.html#/en/overview) · [Manuel français](Documentation/Documentation.html#/fr/overview)
+- [English manual](https://mrmybal.github.io/CyCLAPBridge/#/en/overview) · [Manuel français](https://mrmybal.github.io/CyCLAPBridge/#/fr/overview)
 - [Repository](https://github.com/MrMybal/CyCLAPBridge) · [Issues](https://github.com/MrMybal/CyCLAPBridge/issues) · [Version notes](VERSION.md)
 - [Editor integration](docs/Editors.md) · [Architecture](docs/Architecture.md) · [Steinberg licensing FAQ](https://steinbergmedia.github.io/vst3_dev_portal/pages/FAQ/Licensing.html)
