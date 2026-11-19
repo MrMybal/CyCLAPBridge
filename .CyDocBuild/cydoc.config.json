@@ -1,6 +1,6 @@
 {
   "name": "CyCLAPBridge",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "defaultLocale": "en",
   "locales": [{ "code": "en", "label": "English" }, { "code": "fr", "label": "Français" }],
   "homePage": "overview",

@@ -5,7 +5,7 @@ description: Inspect modules, select plugin IDs, generate wrappers and resume bu
 section: Manual
 parent: overview
 order: 20
-revision: 1
+revision: 2
 ---
 
 ## Inspect capabilities {#inspect}
@@ -40,3 +40,19 @@ cyclapbridge-cli build --project "D:/Exports/Gain-VST3"
 ```
 
 This resumes a generated project. Retain its payload and notices. See [Distribution](doc:distribution) before moving the built artifacts.
+
+## Call Studio tools {#tools}
+
+```sh
+cyclapbridge-cli tools list
+cyclapbridge-cli tools describe convert_plugin
+cyclapbridge-cli tools call list_formats
+```
+
+These commands emit one JSON object on stdout. **List** returns `tools`, **describe** returns `tool` and **call** returns `result`. Exit codes are `0` for success, `2` for invalid usage or JSON, `3` for a tool error and `4` for a connection or protocol error. Errors return an `error` object. A successful receipt in state `awaiting_approval` means the request is queued. Use `get_job` with its `job_id` for the final status.
+
+Without a Studio URL, the CLI describes the whole registry and executes `list_formats`. The other tools use the open Studio's files, approvals and jobs. To target one instance, start its **External assistants (MCP)** server and copy its connection. Pass the copied URL as `--mcp-url` and place its Bearer token in `CYCLAPBRIDGE_MCP_TOKEN`. Use `--mcp-token-env NAME` to read a different environment variable. Pass an argument object with `--args` or read it from a file with `--args-file`. The URL must be the loopback URL given by that Studio instance.
+
+The `capabilities`, `inspect`, `convert` and `build` commands keep their existing options and output. They run directly without Studio.
+
+When the CLI comes from the Studio ZIP, the first conversion extracts the matching backend into the private per-user CLIBackend directory. A generated project still refers to that snapshot when you build it later. An explicit --backend-root still selects the supplied sources.

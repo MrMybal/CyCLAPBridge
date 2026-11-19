@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "AppPaths.h"
-#include "StudioModel.h"
+#include "StudioChat.h"
+#include "StudioTools.h"
 #include "StudioPlatform.h"
 #include <cyui/Core.h>
 #include <cyui/modules/FilePicker.h>
@@ -50,6 +51,30 @@ void translations() {
         {"Help (F1)","Aide (F1)"},{"Cannot open the local manual.","Impossible d’ouvrir le manuel local."},
         {"Cannot open the result folder.","Impossible d’ouvrir le dossier du résultat."},
         {"Build in progress. Wait before closing.","Compilation en cours. Attendez avant de fermer."},
+        {"Chat","Tchat"},{"Providers","Fournisseurs"},{"Provider","Fournisseur"},
+        {"Demo / Markdown (no AI)","Démo Markdown (sans IA)"},
+        {"Detect providers","Détecter les fournisseurs"},
+        {"No ready provider detected.","Aucun fournisseur prêt détecté."},
+        {"Provider detection failed.","La détection des fournisseurs a échoué."},
+        {"Model (optional)","Modèle (facultatif)"},{"Available models","Modèles disponibles"},
+        {"Endpoint","Adresse du service"},{"API key environment variable","Variable d’environnement de la clé API"},
+        {"Invalid API key environment variable name.","Nom de variable d’environnement invalide."},
+        {"Set the API key environment variable and restart Studio.","Définissez la variable d’environnement de la clé API puis relancez Studio."},
+        {"Executable (optional)","Exécutable (facultatif)"},
+        {"Give this chat access to Studio tools","Donner à ce tchat accès aux outils de Studio"},
+        {"Connect / New chat","Connecter / Nouveau tchat"},
+        {"Save chat history locally","Enregistrer l’historique sur cet ordinateur"},
+        {"History ID","ID de l’historique"},{"Restore saved chat","Restaurer le tchat enregistré"},
+        {"Studio cannot locate the local history folder.","Studio ne trouve pas le dossier d’historique local."},
+        {"External assistants (MCP)","Assistants externes (MCP)"},
+        {"Start local MCP server","Démarrer le serveur MCP local"},
+        {"Stop local MCP server","Arrêter le serveur MCP local"},
+        {"Copy MCP connection","Copier la connexion MCP"},
+        {"Assistant request","Demande d’un assistant"},
+        {"External MCP assistant","Assistant MCP externe"},{"Studio chat","Tchat Studio"},
+        {"Inspect plugin","Inspecter le plugin"},{"Convert plugin","Convertir le plugin"},
+        {"Native plugin code may run during this operation.","Le code natif du plugin peut s’exécuter pendant cette opération."},
+        {"Run request","Exécuter la demande"},{"Decline","Refuser"},
         {"Mid grey","Gris moyen"},{"Light grey","Gris clair"}
     });
 }
@@ -57,7 +82,7 @@ std::string label(const char* text){return cyui::trLabel(text);}
 void text(const char* value){ImGui::TextWrapped("%s",cyui::tr(value).c_str());}
 
 struct Picker {
-    enum class Field { input, output, resources, backend } field{};
+    enum class Field { input, output, resources, backend, attachment } field{};
     bool open=false;
     cyui::FilePickerState state;
     cyui::FilePickerOptions options;
@@ -74,7 +99,7 @@ struct Picker {
         options={};options.mode=directory?cyui::FilePickerMode::directory:cyui::FilePickerMode::openFile;
         options.root=pathText(path.root_path());
         if(options.root.empty())options.root=volumes.empty()?"/":volumes.front();
-        if(!directory)options.filters={{"CLAP / VST3 / JSFX",{"clap","vst3","jsfx","txt"}},{"All files",{}}};
+        if(!directory&&destination!=Field::attachment)options.filters={{"CLAP / VST3 / JSFX",{"clap","vst3","jsfx","txt"}},{"All files",{}}};
     }
     void update() {
         using namespace std::chrono_literals;
@@ -120,6 +145,9 @@ struct Picker {
 struct Studio {
     Model model;
     Picker picker;
+    StudioTools tools{model};
+    StudioChat chat{tools,[this]{picker.begin(Picker::Field::attachment,{},false);}};
+    bool chatVisible=false;
     int source=0,target=0;
     std::string input,output,name,resources,pluginId;
     std::string backend=pathText(cybridge::app::backendRoot());
@@ -128,7 +156,7 @@ struct Studio {
     void help() {
         auto path=cybridge::app::dataRoot()/"Documentation/Documentation.html";
         auto url=fs::is_regular_file(path)?fileUrl(path):std::string{};
-        if(url.empty()||!openUrl(url+"#/"+cyui::locale()+"/studio/input"))
+        if(url.empty()||!openUrl(url+"#/"+cyui::locale()+(chatVisible?"/studio/assistants":"/studio/input")))
             cyui::notify(cyui::tr("Cannot open the local manual.").c_str(),cyui::Tone::error);
     }
     void picked(const std::string& path) {
@@ -141,6 +169,7 @@ struct Studio {
         case Picker::Field::output:output=pathText(pathFromText(path)/pathFromText((name.empty()?"Plugin":name)+"-"+formatName(targets[target])+"-converted"));break;
         case Picker::Field::resources:resources=path;break;
         case Picker::Field::backend:backend=path;break;
+        case Picker::Field::attachment:chat.attach(pathFromText(path));break;
         }
     }
     void pathField(const char* caption,std::string& value,Picker::Field field,bool bundle=false) {
@@ -153,6 +182,37 @@ struct Studio {
         if(bundle){ImGui::SameLine();if(cyui::button(label("Bundle").c_str()))picker.begin(field,value,true);}
         ImGui::PopID();
     }
+    fs::path workRoot() const {
+        const auto settings=settingsFile();
+        return (settings.empty()?fs::temp_directory_path()/"CyCLAPBridge":settings.parent_path())/"Work";
+    }
+    void approveRequest(const fs::path& work) {
+        auto options=build;
+        options.cmake=pathFromText(cmake);
+        tools.approve(backendFromRoot(pathFromText(backend)),std::move(options),work);
+    }
+    void drawRequest() {
+        const auto pending=tools.pending();
+        if(!pending)return;
+        cyui::sectionTitle(cyui::tr("Assistant request").c_str());
+        text(pending->external?"External MCP assistant":"Studio chat");
+        text(pending->operation=="inspect_plugin"?"Inspect plugin":"Convert plugin");
+        const auto fields=pending->arguments.dump(2);
+        if(ImGui::BeginChild("##request-paths",cyui::dp(0,140),ImGuiChildFlags_Borders))
+            ImGui::TextWrapped("%s",fields.c_str());
+        ImGui::EndChild();
+        text("Native plugin code may run during this operation.");
+        ImGui::BeginDisabled(model.busy());
+        if(cyui::primaryButton(label("Run request").c_str())) {
+            try {
+                approveRequest(workRoot());
+            }catch(const std::exception& e){cyui::notify(e.what(),cyui::Tone::error);}
+        }
+        ImGui::EndDisabled();
+        ImGui::SameLine();
+        if(cyui::button(label("Decline").c_str()))tools.decline();
+        ImGui::Separator();
+    }
     void start() {
         try {
             ConversionRequest request;request.source=sources[source];request.target=targets[target];
@@ -162,18 +222,18 @@ struct Studio {
 #ifdef __APPLE__
             if(request.target==Format::auv3&&build.generator.empty())build.generator="Xcode";
 #endif
-            auto settings=settingsFile();
-            auto cache=settings.empty()?fs::temp_directory_path()/"CyCLAPBridge":settings.parent_path();
-            model.convert(std::move(request),build,cache/"Work");
+            model.convert(std::move(request),build,workRoot());
         }catch(const std::exception& e){cyui::notify(e.what(),cyui::Tone::error);}
     }
     void draw() {
+        tools.poll();
+        chat.poll();
         auto* viewport=ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);ImGui::SetNextWindowSize(viewport->WorkSize);
         ImGui::Begin("CyCLAPBridge Studio",nullptr,ImGuiWindowFlags_NoDecoration|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings);
         cyui::heading("CyCLAPBridge Studio",1);
         cyui::textDim("%s",cyui::tr("Plugin wrappers and format conversion").c_str());
-        cyui::badge("0.2.0",cyui::Tone::neutral);ImGui::SameLine();
+        cyui::badge("0.2.1",cyui::Tone::neutral);ImGui::SameLine();
         ImGui::SetNextItemWidth(cyui::dp(150));
         if(ImGui::BeginCombo(label("Language").c_str(),cyui::locale()=="fr"?"Français":"English")) {
             for(auto entry:std::array<std::pair<const char*,const char*>,2>{{{"en","English"},{"fr","Français"}}})
@@ -186,7 +246,15 @@ struct Studio {
             ImGui::EndCombo();
         }
         ImGui::SameLine();if(cyui::button(label("Help (F1)").c_str())||ImGui::IsKeyPressed(ImGuiKey_F1))help();
+        ImGui::SameLine();
+        if(cyui::button(label(chatVisible?"Conversion":"Chat").c_str()))chatVisible=!chatVisible;
         cyui::space(10);
+        drawRequest();
+        if(chatVisible)chat.draw();else drawConversion();
+        picked(picker.draw());
+        ImGui::End();cyui::renderNotifications();
+    }
+    void drawConversion() {
         if(cyui::beginCard("##conversion",cyui::tr("Conversion").c_str())) {
             ImGui::BeginDisabled(model.busy());
             if(cyui::beginProperties("##fields",180)) {
@@ -220,7 +288,7 @@ struct Studio {
 #ifndef __APPLE__
         buildAllowed=!apple;
 #endif
-        const bool invalid=model.busy()||input.empty()||output.empty()||identical;
+        const bool invalid=model.busy()||tools.running()||input.empty()||output.empty()||identical;
         ImGui::BeginDisabled(invalid||!buildAllowed);
         if(cyui::primaryButton(label("Convert").c_str()))start();
         ImGui::EndDisabled();ImGui::SameLine();
@@ -238,10 +306,66 @@ struct Studio {
         if(!snapshot.log.empty()){if(cyui::button(label("Copy log").c_str()))ImGui::SetClipboardText(snapshot.log.c_str());}
         if(snapshot.log.empty())snapshot.log=cyui::tr("No build output yet.");
         ImGui::InputTextMultiline("##log",snapshot.log.data(),snapshot.log.size()+1,{ImGui::GetContentRegionAvail().x,std::max(cyui::dp(130.f),ImGui::GetContentRegionAvail().y-cyui::dp(8.f))},ImGuiInputTextFlags_ReadOnly);
-        picked(picker.draw());
-        ImGui::End();cyui::renderNotifications();
     }
 };
+#ifdef CYBRIDGE_STUDIO_LIVE_TEST
+class LiveMcpTest {
+    std::string fixture_;
+    fs::path work_;
+    cymcp::Cancellation cancel_;
+    std::future<int> client_;
+
+public:
+    LiveMcpTest(Studio& studio, const std::vector<std::string>& arguments)
+        : fixture_(arguments[2]),
+          work_(pathFromText(arguments[3])/pathFromText(cymcp::random_token(16).substr(0,12))) {
+        studio.chatVisible=true;
+        studio.cmake=arguments[4];
+        studio.tools.startServer();
+        cymcp::ProcessOptions process;
+        process.executable=pathFromText(arguments[1]);
+        process.arguments={"--live-client", fixture_, pathText(work_)};
+        if(arguments.size()==6)process.arguments.push_back(arguments[5]);
+        const auto connection=cymcp::Json{
+            {"url", studio.tools.endpoint()}, {"token", studio.tools.token()}
+        }.dump()+"\n";
+        cancel_.deadline=cymcp::Clock::now()+std::chrono::minutes(7);
+        client_=std::async(std::launch::async, [process, connection, cancel=cancel_] {
+            cymcp::Process child(process);
+            child.write(connection,cancel);
+            child.close_input();
+            cymcp::ProcessLine line;
+            while(child.next(line,cancel))
+                std::cerr<<line.text<<'\n';
+            return child.wait(cancel);
+        });
+    }
+
+    ~LiveMcpTest() { cancel_.cancel(); }
+
+    std::optional<int> step(Studio& studio) {
+        using namespace std::chrono_literals;
+        if(client_.wait_for(0s)==std::future_status::ready)return client_.get();
+        if(const auto job=studio.tools.pending()) {
+            const auto& args=job->arguments;
+            // Test-only responses to the native approval view, limited to the fixture
+            // and the two paths generated by this test below its work directory.
+            if(!job->external||pathFromText(args.at("input_path").get<std::string>())!=pathFromText(fixture_))
+                return 10;
+            if(job->operation=="convert_plugin") {
+                const auto output=pathFromText(args.at("output_folder").get<std::string>());
+                if(output!=work_/"approved"&&output!=work_/"declined")return 10;
+                if(output==work_/"declined") {
+                    studio.tools.decline();
+                    return {};
+                }
+            }
+            studio.approveRequest(work_/"work");
+        }
+        return {};
+    }
+};
+#endif
 void preferences(bool save) {
     auto path=settingsFile();if(path.empty())return;
     if(save) {
@@ -282,10 +406,15 @@ int run(const std::vector<std::string>& args) {
         if(result.phase!=Phase::succeeded){std::cerr<<result.error<<'\n';return 1;}
         std::cout<<"Output: "<<pathText(result.artifacts)<<'\n';return 0;
     }
-    bool smoke=false,renderTest=false;std::string theme,locale;fs::path image;
-    for(std::size_t i=0;i<args.size();++i) {
+    bool smoke=false,renderTest=false,chatView=false;std::string theme,locale;fs::path image;
+    bool liveTest=false;
+#ifdef CYBRIDGE_STUDIO_LIVE_TEST
+    liveTest=(args.size()==5||args.size()==6)&&args[0]=="--mcp-live-test";
+#endif
+    for(std::size_t i=0;!liveTest&&i<args.size();++i) {
         if(args[i]=="--smoke-test")smoke=true;
         else if(args[i]=="--render-test")renderTest=true;
+        else if(args[i]=="--chat")chatView=true;
         else if((args[i]=="--capture"||args[i]=="--theme"||args[i]=="--locale")&&i+1<args.size()) {
             auto key=args[i++];if(key=="--capture")image=pathFromText(args[i]);else if(key=="--theme")theme=args[i];else locale=args[i];
         }else throw std::runtime_error("Unknown or incomplete Studio option: "+args[i]);
@@ -294,15 +423,23 @@ int run(const std::vector<std::string>& args) {
     struct Context{~Context(){ImGui::DestroyContext();}}context;
     auto& io=ImGui::GetIO();io.IniFilename=nullptr;io.ConfigFlags|=ImGuiConfigFlags_NavEnableKeyboard;
     translations();cyui::Config config;config.density=cyui::Density::comfortable;cyui::apply(config);
-    cyui::FontConfig fonts;fonts.icons=false;cyui::loadFonts(fonts);
-    if(!smoke&&!renderTest&&image.empty())preferences(false);
+    cyui::loadFonts();
+    if(!smoke&&!renderTest&&!liveTest&&image.empty())preferences(false);
     if(!theme.empty()&&!cyui::setTheme(theme.c_str()))throw std::runtime_error("Unknown theme");
     if(!locale.empty()&&!cyui::setLocale(locale.c_str()))throw std::runtime_error("Unknown language");
     Studio studio;
+    studio.chatVisible=chatView;
     if(smoke) {
+        cyui::setLocale("fr");
         unsigned char* pixels;int w,h;io.Fonts->GetTexDataAsRGBA32(&pixels,&w,&h);
         io.DisplaySize={1280,900};io.DeltaTime=1.f/60;
+        studio.chatVisible=true;
+        if(!studio.chat.exerciseDemo([&]{
+            ImGui::NewFrame();studio.draw();ImGui::Render();
+        }))return 9;
+        for(const bool chatPane:{false,true})
         for(const auto& skin:cyui::builtInThemes())for(const auto* language:{"en","fr"}) {
+            studio.chatVisible=chatPane;
             cyui::setTheme(skin.key.c_str());cyui::setLocale(language);ImGui::NewFrame();studio.draw();ImGui::Render();
             if(!ImGui::GetDrawData()||ImGui::GetDrawData()->TotalVtxCount==0)return 3;
         }
@@ -319,7 +456,7 @@ int run(const std::vector<std::string>& args) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,0);
     const char* glsl="#version 130";
 #endif
-    if(renderTest||!image.empty())glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
+    if(renderTest||liveTest||!image.empty())glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
     auto* window=glfwCreateWindow(1100,880,"CyCLAPBridge Studio",nullptr,nullptr);if(!window)return 5;
     struct Window{GLFWwindow* p;~Window(){glfwDestroyWindow(p);}}windowOwner{window};
     glfwSetWindowSizeLimits(window,760,720,GLFW_DONT_CARE,GLFW_DONT_CARE);
@@ -328,6 +465,10 @@ int run(const std::vector<std::string>& args) {
     struct GlfwBackend{~GlfwBackend(){ImGui_ImplGlfw_Shutdown();}}glfwBackend;
     if(!ImGui_ImplOpenGL3_Init(glsl))return 7;
     struct Renderer{~Renderer(){ImGui_ImplOpenGL3_Shutdown();}}renderer;
+#ifdef CYBRIDGE_STUDIO_LIVE_TEST
+    std::unique_ptr<LiveMcpTest> live;
+    if(liveTest)live=std::make_unique<LiveMcpTest>(studio,args);
+#endif
     int frames=0;bool wrote=image.empty();
     while(!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -340,12 +481,18 @@ int run(const std::vector<std::string>& args) {
             if(++frames>=5&&!image.empty())wrote=capture(image,width,height);
             glfwSwapBuffers(window);
         }else std::this_thread::sleep_for(std::chrono::milliseconds(20));
+#ifdef CYBRIDGE_STUDIO_LIVE_TEST
+        if(live) {
+            if(const auto done=live->step(studio))return *done;
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+#endif
         if((renderTest||!image.empty())&&frames>=5)break;
-        if(glfwWindowShouldClose(window)&&studio.model.busy()){
+        if(glfwWindowShouldClose(window)&&(studio.model.busy()||studio.tools.running())){
             glfwSetWindowShouldClose(window,GLFW_FALSE);cyui::notify(cyui::tr("Build in progress. Wait before closing.").c_str(),cyui::Tone::warning);
         }
     }
-    if(!renderTest&&image.empty())preferences(true);
+    if(!renderTest&&!liveTest&&image.empty())preferences(true);
     return wrote?0:8;
 }
 }

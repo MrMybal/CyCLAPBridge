@@ -5,6 +5,11 @@
 #include <iostream>
 #include <map>
 #include <stdexcept>
+
+namespace cybridge::app {
+int runTools(const std::vector<std::string>&);
+std::filesystem::path cliBackendRoot(const BuildOptions&);
+}
 namespace {
 std::string text(const std::filesystem::path& p) {
     auto u = p.u8string(); return {reinterpret_cast<const char*>(u.data()), u.size()};
@@ -13,8 +18,9 @@ std::filesystem::path path(const std::string& s) {
     return std::filesystem::path(std::u8string(reinterpret_cast<const char8_t*>(s.data()),s.size()));
 }
 void usage() {
-    std::cout << "CyCLAPBridge 0.2.0 - C++ plugin interoperability\n\n"
+    std::cout << "CyCLAPBridge 0.2.1 - C++ plugin interoperability\n\n"
       "  capabilities\n"
+      "  tools list | tools describe NAME | tools call NAME (tools --help)\n"
       "  convert --input Plugin.clap --output NEW_PROJECT [--name NAME] [--build]\n"
       "          [--from clap|vst3|lv2|jsfx|au] [--to clap|vst3|lv2|au|auv3]\n"
       "          [--backend-root PATH] [--plugin-id ID] [--resources DIR]\n"
@@ -28,6 +34,7 @@ void usage() {
 int run(const std::vector<std::string>& args) {
     try {
         if(args.size() < 2 || args[1] == "--help" || args[1] == "help") { usage(); return 0; }
+        if(args[1] == "tools") return cybridge::app::runTools(args);
         if(args[1] == "capabilities") {
             for(auto& c : cybridge::conversionCapabilities())
                 std::cout << cybridge::formatName(c.source) << " -> " << cybridge::formatName(c.target)
@@ -60,6 +67,11 @@ int run(const std::vector<std::string>& args) {
                       << " output buses, " << plugin.parameters().size() << " parameters\n";
             return 0;
         }
+        auto config = cybridge::app::buildOptions();
+        if(options.contains("--cmake")) config.cmake = path(options["--cmake"]);
+        if(options.contains("--generator")) config.generator = options["--generator"];
+        if(options.contains("--arch")) config.architecture = options["--arch"];
+        if(options.contains("--config")) config.configuration = options["--config"];
         cybridge::ConversionProject project;
         if(args[1] == "convert") {
             cybridge::ConversionRequest request;
@@ -68,7 +80,7 @@ int run(const std::vector<std::string>& args) {
             if(options.contains("--from")) request.source = cybridge::parseFormat(options["--from"]);
             if(options.contains("--to")) request.target = cybridge::parseFormat(options["--to"]);
             request.backend = cybridge::backendFromRoot(options.contains("--backend-root") ?
-                path(options["--backend-root"]) : cybridge::app::backendRoot());
+                path(options["--backend-root"]) : cybridge::app::cliBackendRoot(config));
             request.pluginId=options["--plugin-id"];
             if(options.contains("--resources"))request.resources=path(options["--resources"]);
             if(options.contains("--au-sdk"))request.backend.audioUnitSdk=path(options["--au-sdk"]);
@@ -79,11 +91,6 @@ int run(const std::vector<std::string>& args) {
         } else if(args[1] == "build") {
             project.directory = std::filesystem::absolute(required("--project"));
         } else throw std::invalid_argument("Unknown command: " + args[1]);
-        auto config = cybridge::app::buildOptions();
-        if(options.contains("--cmake")) config.cmake = path(options["--cmake"]);
-        if(options.contains("--generator")) config.generator = options["--generator"];
-        if(options.contains("--arch")) config.architecture = options["--arch"];
-        if(options.contains("--config")) config.configuration = options["--config"];
         auto result = cybridge::buildConversionProject(project, config,
             [](const std::string& line) { std::cout << line << std::flush; });
         if(!result.exitCode) std::cout << "\nArtifacts: " << text(result.artifactsDirectory) << '\n';

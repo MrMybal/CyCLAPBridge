@@ -32,32 +32,63 @@ function(cybridge_add_studio)
   set(CYUI_BUILD_GALLERY OFF)
   set(CYUI_BUILD_AUDIO OFF)
   set(CYUI_BUILD_TESTS OFF)
-  set(CYUI_MODULES FilePicker)
+  set(CYUI_BUILD_WEB_CEF OFF)
+  set(CYUI_MODULES FilePicker DocumentViews)
   add_subdirectory(third_party/CyUI EXCLUDE_FROM_ALL)
-  add_executable(CyCLAPBridgeStudio WIN32 MACOSX_BUNDLE
-    apps/Studio.cpp apps/StudioModel.cpp apps/StudioPlatform.cpp)
-  cybridge_application(CyCLAPBridgeStudio)
-  target_link_libraries(CyCLAPBridgeStudio PRIVATE CyUI::Core CyUI::FilePicker
-    cybridge_studio_imgui glfw OpenGL::GL)
-  if(WIN32)
-    target_compile_definitions(CyCLAPBridgeStudio PRIVATE NOMINMAX UNICODE _UNICODE WIN32_LEAN_AND_MEAN)
-    target_sources(CyCLAPBridgeStudio PRIVATE apps/windows/Studio.manifest)
-    target_link_libraries(CyCLAPBridgeStudio PRIVATE shell32 shlwapi)
-    if(MSVC)
-      target_link_options(CyCLAPBridgeStudio PRIVATE "/MANIFESTINPUT:${PROJECT_SOURCE_DIR}/apps/windows/Studio.manifest")
-    endif()
-  elseif(APPLE)
-    target_sources(CyCLAPBridgeStudio PRIVATE apps/macos/StudioPlatform.mm)
-    set_source_files_properties(apps/macos/StudioPlatform.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
-    set_target_properties(CyCLAPBridgeStudio PROPERTIES
-      OBJCXX_STANDARD 20 OBJCXX_STANDARD_REQUIRED ON
-      MACOSX_BUNDLE_GUI_IDENTIFIER org.cybridge.studio
-      MACOSX_BUNDLE_BUNDLE_NAME "CyCLAPBridge Studio"
-      MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
-      MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
-      MACOSX_BUNDLE_INFO_PLIST "${PROJECT_SOURCE_DIR}/apps/macos/Info.plist.in")
-    target_link_libraries(CyCLAPBridgeStudio PRIVATE "-framework AppKit")
+  cybridge_add_operations()
+  set(_studio_sdk_source "${_studio_sdk_source}" PARENT_SCOPE)
+  set(_studio_sdk_revision "${_studio_sdk_revision}" PARENT_SCOPE)
+  set(_studio_ui_notices
+    "third_party/CyUI/third_party/md4c/LICENSE.md|studio/MD4C.md"
+    "third_party/CyUI/third_party/lexilla/License.txt|studio/Lexilla.txt"
+    "third_party/CyUI/third_party/scintilla/License.txt|studio/Scintilla.txt"
+    "third_party/CyUI/third_party/stb/LICENSE|studio/stb.txt"
+  )
+  set(_studio_chat_notices "${_cybridge_sdk_notices};${_studio_ui_notices}" PARENT_SCOPE)
+  set(_studio_targets CyCLAPBridgeStudio)
+  if(CYCLAPBRIDGE_BUILD_TESTS)
+    list(APPEND _studio_targets cybridge-studio-live-host)
   endif()
+  foreach(_studio_target IN LISTS _studio_targets)
+    add_executable(${_studio_target} WIN32 MACOSX_BUNDLE
+      apps/Studio.cpp apps/StudioChat.cpp apps/StudioPlatform.cpp)
+    if(_studio_target STREQUAL "CyCLAPBridgeStudio")
+      cybridge_application(${_studio_target})
+    else()
+      target_link_libraries(${_studio_target} PRIVATE CyCLAPBridge::CyCLAPBridge)
+      target_compile_definitions(${_studio_target} PRIVATE CYBRIDGE_STUDIO_LIVE_TEST)
+      target_compile_options(${_studio_target} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W4;/utf-8>)
+    endif()
+    target_include_directories(${_studio_target} PRIVATE "${_studio_sdk_source}/examples/chat_app")
+    target_link_libraries(${_studio_target} PRIVATE CyUI::Core CyUI::FilePicker
+      cybridge_studio_imgui glfw OpenGL::GL CyMCP::ChatUI cybridge_studio_tools)
+    if(WIN32)
+      target_compile_definitions(${_studio_target} PRIVATE NOMINMAX UNICODE _UNICODE WIN32_LEAN_AND_MEAN)
+      target_sources(${_studio_target} PRIVATE apps/windows/Studio.manifest)
+      target_link_libraries(${_studio_target} PRIVATE shell32 shlwapi)
+      if(MSVC)
+        target_link_options(${_studio_target} PRIVATE "/MANIFESTINPUT:${PROJECT_SOURCE_DIR}/apps/windows/Studio.manifest")
+      endif()
+    elseif(APPLE)
+      target_sources(${_studio_target} PRIVATE apps/macos/StudioPlatform.mm)
+      set_source_files_properties(apps/macos/StudioPlatform.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+      set_target_properties(${_studio_target} PROPERTIES
+        OBJCXX_STANDARD 20 OBJCXX_STANDARD_REQUIRED ON
+        MACOSX_BUNDLE_GUI_IDENTIFIER org.cybridge.studio
+        MACOSX_BUNDLE_BUNDLE_NAME "CyCLAPBridge Studio"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_INFO_PLIST "${PROJECT_SOURCE_DIR}/apps/macos/Info.plist.in")
+      target_link_libraries(${_studio_target} PRIVATE "-framework AppKit")
+    endif()
+  endforeach()
+  foreach(_notice IN LISTS _studio_ui_notices)
+    string(REPLACE "|" ";" _pair "${_notice}")
+    list(GET _pair 0 _input)
+    list(GET _pair 1 _output)
+    get_filename_component(_notice_name "${_output}" NAME)
+    install(FILES "${_input}" DESTINATION "${_cybridge_data_dir}/licenses/studio" RENAME "${_notice_name}")
+  endforeach()
   set(_ui_notices "${_cybridge_data_dir}/licenses/studio")
   install(FILES third_party/CyUI/LICENSE DESTINATION "${_ui_notices}" RENAME CyUI.txt)
   install(FILES third_party/glfw/LICENSE.md DESTINATION "${_ui_notices}" RENAME GLFW.txt)

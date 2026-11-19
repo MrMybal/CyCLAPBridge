@@ -1,6 +1,7 @@
 #pragma once
 #include <cyclapbridge/Conversion.h>
 #include <filesystem>
+#include <cstdlib>
 #ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -12,6 +13,21 @@
 #include <unistd.h>
 #endif
 namespace cybridge::app {
+inline std::filesystem::path settingsFile() {
+#ifdef _WIN32
+    std::wstring value(32768,L'\0');auto n=GetEnvironmentVariableW(L"LOCALAPPDATA",value.data(),static_cast<DWORD>(value.size()));
+    if(!n||n>=value.size())return {};value.resize(n);
+    return std::filesystem::path(value)/L"CyCLAPBridge/Studio.ini";
+#else
+    const auto* home=std::getenv("HOME");
+#ifdef __APPLE__
+    return home?std::filesystem::path(home)/"Library/Application Support/CyCLAPBridge/Studio.ini":std::filesystem::path{};
+#else
+    if(const auto* xdg=std::getenv("XDG_CONFIG_HOME");xdg&&*xdg)return std::filesystem::path(xdg)/"CyCLAPBridge/Studio.ini";
+    return home?std::filesystem::path(home)/".config/CyCLAPBridge/Studio.ini":std::filesystem::path{};
+#endif
+#endif
+}
 inline std::filesystem::path executablePath() {
 #ifdef _WIN32
     std::wstring buffer(32768, L'\0');

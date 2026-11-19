@@ -12,6 +12,12 @@ add_test(NAME cybridge-native COMMAND cybridge-tests "$<TARGET_FILE:cybridge-gai
 add_executable(cybridge-multi-hosts MultiHosts.cpp)
 target_link_libraries(cybridge-multi-hosts PRIVATE CyCLAPBridge::CyCLAPBridge)
 add_test(NAME cybridge-jsfx-host COMMAND cybridge-multi-hosts jsfx "${CMAKE_CURRENT_SOURCE_DIR}/Gain.jsfx")
+if(TARGET cyclapbridge-cli)
+  add_test(NAME cybridge-cli-tools COMMAND "${CMAKE_COMMAND}"
+    "-DCLI=$<TARGET_FILE:cyclapbridge-cli>" "-DFIXTURE=${CMAKE_CURRENT_SOURCE_DIR}/Gain.jsfx"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/StudioCli.cmake")
+  set(_live_cli "$<TARGET_FILE:cyclapbridge-cli>")
+endif()
 if(TARGET CyCLAPBridgeStudio)
   add_test(NAME cybridge-studio-smoke COMMAND CyCLAPBridgeStudio --smoke-test)
   add_executable(cybridge-studio-model StudioModelTests.cpp ../apps/StudioModel.cpp ../apps/StudioPlatform.cpp)
@@ -30,6 +36,26 @@ if(TARGET CyCLAPBridgeStudio)
   add_test(NAME cybridge-studio-controller COMMAND cybridge-studio-model "${PROJECT_SOURCE_DIR}"
     "$<TARGET_FILE:cybridge-gain-fixture>" "${CMAKE_BINARY_DIR}/test-work")
   add_test(NAME cybridge-studio-render COMMAND CyCLAPBridgeStudio --render-test)
+  add_test(NAME cybridge-studio-chat-render COMMAND CyCLAPBridgeStudio --render-test --chat)
+  add_executable(cybridge-studio-mcp StudioMcpTests.cpp)
+  target_link_libraries(cybridge-studio-mcp PRIVATE cybridge_studio_tools CyMCP::ChatUI)
+  target_include_directories(cybridge-studio-mcp SYSTEM PRIVATE
+    "${_studio_sdk_source}/third_party/httplib" "${_studio_sdk_source}/examples/chat_app")
+  if(MSVC)
+    target_compile_options(cybridge-studio-mcp PRIVATE /utf-8)
+  endif()
+  add_test(NAME cybridge-studio-mcp COMMAND cybridge-studio-mcp
+    "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/Gain.jsfx"
+    "${CMAKE_BINARY_DIR}/test-work/mcp" "${CMAKE_COMMAND}")
+  set_tests_properties(cybridge-studio-mcp PROPERTIES TIMEOUT 480)
+  add_test(NAME cybridge-studio-history-upgrade COMMAND cybridge-studio-mcp --restore-legacy
+    "${CMAKE_CURRENT_SOURCE_DIR}/fixtures/legacy-056.json" "${CMAKE_BINARY_DIR}/test-work/history")
+  set_tests_properties(cybridge-studio-history-upgrade PROPERTIES TIMEOUT 30)
+  add_test(NAME cybridge-studio-live-mcp
+    COMMAND cybridge-studio-live-host --mcp-live-test "$<TARGET_FILE:cybridge-studio-mcp>"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Gain.jsfx" "${CMAKE_BINARY_DIR}/live"
+    "${CMAKE_COMMAND}" ${_live_cli})
+  set_tests_properties(cybridge-studio-live-mcp PROPERTIES TIMEOUT 480)
 endif()
 if(WIN32)
   target_compile_definitions(cybridge-gain-fixture PRIVATE NOMINMAX UNICODE _UNICODE)

@@ -5,7 +5,7 @@ description: Choisir une source et livrer un plugin compilé dans un autre forma
 section: Manuel
 parent: overview
 order: 10
-sourceRevision: 4
+sourceRevision: 7
 ---
 
 ```image
@@ -40,3 +40,30 @@ Studio utilise par défaut le premier plugin compatible d’un module multiple. 
 ## Langue, thème et outils {#settings}
 
 Choisir l’anglais ou le français et un thème en haut. Les préférences sont conservées dans le dossier de configuration de l’utilisateur du système. Le navigateur de fichiers commun utilise les racines locales ; les chemins complets peuvent aussi être collés dans les champs. Les options avancées sélectionnent l’ID du plugin et permettent d’adapter CMake, le générateur, l’architecture et la configuration au besoin.
+
+## Assistants dans Studio {#assistants}
+
+1. Ouvrir **Tchat**, puis **Fournisseurs**. Sélectionner **Démo Markdown (sans IA)** et cliquer sur **Connecter / Nouveau tchat** pour essayer le panneau localement.
+2. Pour une conversation avec une IA, utiliser **Détecter les fournisseurs** pour repérer les CLI installées, les clés API configurées et les services locaux démarrés, ou choisir un fournisseur manuellement. Sélectionner la connexion et se connecter. La réponse s’affiche au fil de sa génération et **Arrêter** interrompt la réponse en cours. Un fournisseur CLI utilise le programme installé et déjà authentifié. Un fournisseur API utilise la clé de la variable d’environnement indiquée, si elle est nécessaire. Pour un moteur local installé, utiliser l’adresse de son service. Si Studio propose une liste de modèles, choisir un modèle et se reconnecter.
+3. Avec un fournisseur compatible, laisser **Donner à ce tchat accès aux outils de Studio** coché lors de la connexion. Demander une inspection ou une conversion et donner les chemins utiles. Vérifier la demande dans Studio, puis choisir **Exécuter la demande** ou **Refuser**. N’approuver que les fichiers de confiance, car l’inspection et certaines conversions exécutent le code du plugin.
+
+Pour un assistant externe sur la même machine, ouvrir **Assistants externes (MCP)** et choisir **Démarrer le serveur MCP local**. **Copier la connexion MCP** fournit l’URL HTTP et l’en-tête Bearer à renseigner dans le client MCP. Garder le jeton privé. **Arrêter le serveur MCP local** le révoque. Un redémarrage du serveur fournit une nouvelle connexion.
+
+Cocher **Enregistrer l’historique sur cet ordinateur** avant de se connecter pour enregistrer chaque tour sous un nouvel ID. Pour reprendre la conversation, sélectionner le même fournisseur, saisir cet ID et choisir **Restaurer le tchat enregistré**.
+
+| Outil | Fonction accessible à l’assistant |
+| --- | --- |
+| `list_formats` | Lire les formats d’inspection et les directions de conversion disponibles sur cette plateforme. |
+| `inspect_plugin` | Demander les métadonnées et le nombre de bus audio et de paramètres d’un fichier, d’un bundle ou d’un script JSFX. |
+| `convert_plugin` | Demander un wrapper compilé. Fournir les formats source et cible, un chemin d’entrée absolu et un nouveau dossier de sortie absolu. Les champs facultatifs sélectionnent un ID de plugin, un nom de wrapper, un dossier de ressources ou un identifiant de bundle Apple. |
+| `get_job` | Suivre une demande par ID et lire son résultat, son erreur ou le journal de compilation. |
+
+L’inspection et la conversion renvoient un ID dès la demande. Une conversion réussie livre les mêmes fichiers que **Convertir** dans Studio, avec le wrapper, le payload et ses notices. Le fournisseur et la connexion MCP restent en mémoire pendant la session de Studio.
+
+### Périmètre des outils MCP {#assistant-scope}
+
+Choisir **Exécuter la demande** pour autoriser exactement l’entrée, la destination et les options affichées. **Refuser** laisse l’entrée et la destination intactes. Une conversion lancée suit le parcours habituel de Studio. Les conversions en cours ne proposent ni annulation ni reprise. Studio garde en mémoire les huit derniers résultats de demandes d’assistants pendant la session.
+
+La sélection de fichiers, l’ouverture du résultat dans l’explorateur et l’apparence restent des actions de l’interface. Les outils prennent des chemins explicites et renvoient le dossier de sortie au client. Studio reçoit les appels MCP pour ses propres fonctions audio. L’inspection et la conversion sont autonomes et ne nécessitent pas l’importation d’outils d’autres applications.
+
+Le catalogue complet des quatre outils de Studio est transmis à l’assistant. Les clients MCP peuvent mettre leurs schémas en cache pendant 30 secondes. L’état d’un job est relu à chaque appel. Studio conserve l’historique complet et ne configure pas de fenêtre de contexte pour le modèle. Les journaux de conversion bornés et le catalogue fixe ne nécessitent ni stockage de ressources, ni recherche de fichiers, ni abonnement aux changements, ni journal de performance.

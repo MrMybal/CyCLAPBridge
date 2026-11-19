@@ -5,6 +5,9 @@
 #include <mutex>
 #include <thread>
 namespace cybridge::studio {
+// The caller owns the workspace and keeps it alive for the generated project.
+BackendPaths prepareBackend(const BackendPaths&, const std::filesystem::path& workspace,
+                            const BuildOptions&, const LogSink&);
 enum class Phase { ready, generating, building, succeeded, failed };
 struct Snapshot {
     Phase phase = Phase::ready;

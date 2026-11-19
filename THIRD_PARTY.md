@@ -69,10 +69,17 @@ runtime or documentation generator is linked into the C++ library or Studio.
 
 | Component | Repository | Pinned revision | License / scope |
 | --- | --- | --- | --- |
-| CyUI 1.2.0 | https://github.com/MrMybal/CyUI | 7019916ac1de987f86cef43b54a8f16fb0c6c9fc | MIT; Core and FilePicker only |
+| CyUI 1.2.0 | https://github.com/MrMybal/CyUI | 6ef01cfcdb197f3a89d64618ce5ef8818c704728 | MIT; Core, FilePicker and DocumentViews with Markdown/highlighting dependencies |
 | GLFW 3.4 | https://github.com/glfw/glfw | 7b6aead9fb88b3623e3b3725ebb42670cbe4c579 | zlib; native windows, input and OpenGL context |
 | Dear ImGui 1.93.1 WIP, docking | https://github.com/ocornut/imgui | cf53467ab0db7a783f04b32dd9160e6aa5b720ef | MIT and embedded stb terms; one target supplied to CyUI |
 | JetBrains Mono Regular 2.304 | CyUI's retained font snapshot | Same CyUI revision | SIL OFL 1.1; font embedded by Core |
+
+Studio and the CLI link [CyMCPSDK 0.7.0](https://github.com/MrMybal/CyMCPSDK),
+revision `791d4d7d7680213b282ec8529d248a10f8494d77` (MIT), for ChatUI, AI providers
+and the loopback MCP server. This pin was imported from the local SDK repository. The tested Windows build and package use that same revision. The package records it in Resources/CyMCPSDK-revision.txt. The application installs the SDK's MIT, nlohmann/json,
+cpp-httplib and PicoSHA2 notices. The CyUI document modules retain the MD4C,
+Lexilla, Scintilla and stb notices. On Linux/macOS the SDK uses the host libcurl
+and its TLS dependencies.
 
 These are separate Studio-only dependencies. The audio library exports no CyUI,
 GLFW or ImGui requirement. CyUI's own bundled ImGui is not built; no upstream

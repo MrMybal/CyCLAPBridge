@@ -9,7 +9,7 @@ revision: 3
 
 ## Start here {#getting-started}
 
-CyCLAPBridge 0.2.0 is in development. It combines a static C++20 hosting library, a conversion CLI and a CyUI desktop Studio. The audio library is independent of other Cy projects and UI toolkits; the optional Studio uses CyUI.
+CyCLAPBridge 0.2.1 is in development. It combines a static C++20 hosting library, a conversion CLI and a CyUI desktop Studio. The audio library is independent of other Cy projects and UI toolkits; the optional Studio uses CyUI.
 
 For a plugin or script you want to use in another format, follow [Create a wrapper](doc:studio). For a DAW implementation, start with [Integrate the library](doc:library). The [format matrix](doc:formats) explains the supported directions and their boundaries.
 
@@ -29,4 +29,4 @@ The DAW chooses the process, creates and supervises workers, transports audio/ev
 
 ## Platform applications {#platforms}
 
-On Windows, run `CyCLAPBridgeStudio.exe`; on Linux, `CyCLAPBridgeStudio`. The prepared macOS application package contains `CyCLAPBridgeStudio.app`. Native Linux/macOS builds still require validation. Keep the complete application folder. The Mac app stores its manual and conversion components in `Contents/Resources/CyCLAPBridge`. The developer SDK and CLI are distributed separately.
+On Windows, run `CyCLAPBridgeStudio.exe`; on Linux, `CyCLAPBridgeStudio`. The prepared macOS application package contains `CyCLAPBridgeStudio.app`. Native Linux/macOS builds still require validation. Keep the complete application folder. The Mac app stores its manual and conversion components in `Contents/Resources/CyCLAPBridge`. The application package includes the CLI when built. The developer SDK is distributed separately.

@@ -1,6 +1,6 @@
 # Studio platform builds
 
-Studio uses one C++20 interface with CyUI Core/FilePicker, one pinned Dear ImGui
+Studio uses one C++20 interface with CyUI Core/FilePicker/DocumentViews and the native CyMCPSDK chat, one pinned Dear ImGui
 target, GLFW 3.4 and the OpenGL 3 renderer. These dependencies belong only to the
 optional Studio executable. The static audio library and its public headers do
 not depend on them. Configuration never downloads a dependency.
@@ -21,7 +21,7 @@ git submodule update --init third_party/clap-wrapper third_party/clap third_part
 git -C third_party/vst3sdk submodule update --init base public.sdk pluginterfaces cmake
 ```
 
-CyUI may require repository access. The exact revisions and retained licenses
+Studio and the command line compile CyMCPSDK from the sibling checkout if present (on the usual Windows layout, `D:/_Project/CyMCPSDK`). Supply `-DCYCLAPBRIDGE_CYMCP_SOURCE_DIR=<path>` to select a different local checkout. Initialize the pinned `third_party/CyMCPSDK` submodule only as a fallback when local sources are unavailable. CMake prints the source and revision it uses. CyUI may require repository access. The exact revisions and retained licenses
 are in `THIRD_PARTY.md`. Studio supplies its own pinned ImGui target; CyUI's
 bundled ImGui copy is not compiled. No changes to CyUI are needed.
 
@@ -42,9 +42,7 @@ cpack --preset windows-x64
 ```
 
 Run `CyCLAPBridgeStudio.exe` directly at the root of the installed/extracted
-application. Keep `Resources` beside it. The ZIP contains this executable, its
-resources and a short startup guide; the developer headers and static library
-belong to the separate SDK distribution.
+application. Keep `Resources` beside it. The ZIP contains Studio, the CLI when built, their resources and a short startup guide. The developer SDK supplies the headers and static library.
 
 ## Linux
 
@@ -52,6 +50,8 @@ Use GCC 11+ or a C++20-capable Clang, Make, CMake 3.27+, OpenGL development
 libraries and the X11 development packages required by GLFW. On Debian/Ubuntu,
 GLFW documents `xorg-dev` for X11; the OpenGL development package is also needed
 (commonly `libgl1-mesa-dev`). See the [GLFW build requirements](https://www.glfw.org/docs/3.4/compile.html).
+
+The chat build also needs libcurl development files (for example, libcurl4-openssl-dev on Debian/Ubuntu).
 
 The prepared preset enables X11 and disables GLFW's Wayland backend. A Wayland
 session therefore needs XWayland. Native Wayland integration is not claimed.
@@ -70,7 +70,7 @@ libraries remain OS requirements. Native library/plugin compatibility is unvalid
 ## macOS
 
 Use macOS 11+, Xcode with its SDK/tools, CMake 3.27+ and a C++20-capable Apple
-Clang. The GLFW Cocoa backend uses an OpenGL 3.2 core context. Apple deprecates
+Clang. The chat uses libcurl from the platform or a CMake-discoverable installation. The GLFW Cocoa backend uses an OpenGL 3.2 core context. Apple deprecates
 OpenGL; this implementation has not been validated on a Mac.
 
 ```sh

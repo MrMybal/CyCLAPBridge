@@ -26,6 +26,7 @@ public:
     }
     ~WorkDirectory(){std::error_code ignored;fs::remove_all(path,ignored);}
 };
+}
 BackendPaths prepareBackend(const BackendPaths& backend,const fs::path& workspace,
                             const BuildOptions& options,const LogSink& log) {
     if(fs::is_regular_file(backend.templates/"PayloadEntry.cpp"))return backend;
@@ -40,6 +41,7 @@ BackendPaths prepareBackend(const BackendPaths& backend,const fs::path& workspac
         throw std::runtime_error("Cannot prepare the conversion components. Check the CMake executable in Advanced options.");
     return backendFromRoot(destination);
 }
+namespace {
 void deliver(const fs::path& artifacts,const fs::path& destination) {
     if(!fs::is_directory(artifacts))throw std::runtime_error("The build produced no artifact directory");
     WorkDirectory staging(destination.parent_path());

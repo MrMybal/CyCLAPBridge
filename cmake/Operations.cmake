@@ -1,0 +1,61 @@
+# The application registry is shared by Studio and the CLI. The audio library has no SDK dependency.
+set(CYCLAPBRIDGE_CYMCP_SOURCE_DIR "" CACHE PATH "CyMCPSDK source override. Auto-detects the sibling checkout before using the pinned submodule.")
+function(cybridge_add_operations)
+  set(CYMCP_BUILD_HTTP ON)
+  set(CYMCP_BUILD_PLATFORM ON)
+  set(CYMCP_BUILD_MCP ON)
+  set(CYMCP_BUILD_AI ${CYCLAPBRIDGE_BUILD_GUI})
+  set(CYMCP_BUILD_CHAT_UI ${CYCLAPBRIDGE_BUILD_GUI})
+  set(CYMCP_BUILD_CHAT_APP OFF)
+  set(CYMCP_BUILD_LOCAL OFF)
+  set(CYMCP_BUILD_TESTS OFF)
+  set(CYMCP_BUILD_EXAMPLES OFF)
+  set(CYMCP_BUILD_BENCHMARKS OFF)
+  if(CYCLAPBRIDGE_CYMCP_SOURCE_DIR)
+    get_filename_component(_studio_sdk_source "${CYCLAPBRIDGE_CYMCP_SOURCE_DIR}" ABSOLUTE
+      BASE_DIR "${PROJECT_SOURCE_DIR}")
+  elseif(EXISTS "${PROJECT_SOURCE_DIR}/../CyMCPSDK/CMakeLists.txt")
+    get_filename_component(_studio_sdk_source "${PROJECT_SOURCE_DIR}/../CyMCPSDK" ABSOLUTE)
+  else()
+    set(_studio_sdk_source "${PROJECT_SOURCE_DIR}/third_party/CyMCPSDK")
+  endif()
+  if(NOT EXISTS "${_studio_sdk_source}/include/cymcp/chat_ui.hpp")
+    message(FATAL_ERROR "CyMCPSDK sources are required for Studio and the CLI. Set CYCLAPBRIDGE_CYMCP_SOURCE_DIR or initialize third_party/CyMCPSDK.")
+  endif()
+  find_package(Git QUIET)
+  set(_studio_sdk_revision "unknown")
+  if(Git_FOUND AND EXISTS "${_studio_sdk_source}/.git")
+    execute_process(COMMAND "${GIT_EXECUTABLE}" -c "safe.directory=${_studio_sdk_source}"
+      -C "${_studio_sdk_source}" rev-parse HEAD
+      OUTPUT_VARIABLE _sdk_commit OUTPUT_STRIP_TRAILING_WHITESPACE RESULT_VARIABLE _sdk_git_result
+      ERROR_QUIET)
+    if(_sdk_git_result EQUAL 0)
+      set(_studio_sdk_revision "${_sdk_commit}")
+    endif()
+  endif()
+  message(STATUS "Studio CyMCPSDK: ${_studio_sdk_source} (${_studio_sdk_revision})")
+  add_subdirectory("${_studio_sdk_source}" "${PROJECT_BINARY_DIR}/studio-cymcp" EXCLUDE_FROM_ALL)
+  set(_studio_sdk_source "${_studio_sdk_source}" PARENT_SCOPE)
+  set(_studio_sdk_revision "${_studio_sdk_revision}" PARENT_SCOPE)
+  set(_cybridge_sdk_notices
+    "${_studio_sdk_source}/LICENSE|studio/CyMCPSDK.txt"
+    "${_studio_sdk_source}/THIRD_PARTY_NOTICES.md|studio/CyMCPSDK-notices.md"
+    "${_studio_sdk_source}/third_party/nlohmann/LICENSE.MIT|studio/nlohmann-json.txt"
+    "${_studio_sdk_source}/third_party/httplib/LICENSE|studio/cpp-httplib.txt"
+    "${_studio_sdk_source}/third_party/picosha2/LICENSE|studio/PicoSHA2.txt"
+  )
+  set(_cybridge_sdk_notices "${_cybridge_sdk_notices}" PARENT_SCOPE)
+  add_library(cybridge_studio_tools STATIC apps/StudioTools.cpp apps/StudioModel.cpp)
+  target_include_directories(cybridge_studio_tools PUBLIC apps)
+  target_link_libraries(cybridge_studio_tools PUBLIC CyCLAPBridge::CyCLAPBridge CyMCP::MCP)
+  if(MSVC)
+    target_compile_options(cybridge_studio_tools PRIVATE /W4 /utf-8)
+  endif()
+  foreach(_notice IN LISTS _cybridge_sdk_notices)
+    string(REPLACE "|" ";" _pair "${_notice}")
+    list(GET _pair 0 _input)
+    list(GET _pair 1 _output)
+    get_filename_component(_notice_name "${_output}" NAME)
+    install(FILES "${_input}" DESTINATION "${_cybridge_data_dir}/licenses/studio" RENAME "${_notice_name}")
+  endforeach()
+endfunction()

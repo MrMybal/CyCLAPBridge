@@ -1,7 +1,7 @@
 <table width="100%">
   <tr>
     <td width="300" align="left" valign="top">
-      <a href="https://mrmybal.github.io/CyCLAPBridge/#/en/overview">Online manual</a><br>
+      <a href="https://mrmybal.github.io/CyCLAPBridge/#/en/overview">Online manual (0.2.0)</a><br>
       <a href="Documentation/Documentation.html#/en/overview">Offline HTML</a><br>
       <a href="https://github.com/MrMybal/CyCLAPBridge">Repository</a><br><br>
       <sub>README</sub><br><a href="README.md">English</a> · <a href="README.fr.md">Français</a>
@@ -9,8 +9,8 @@
     <td width="400" align="center" valign="middle"><strong>CyCLAPBridge</strong><br><sub>C++20 · Studio · CLI</sub></td>
     <td width="300" align="right" valign="top">
       <p><sub>Application license</sub><br><a href="LICENSE"><strong>MIT</strong></a></p>
-      <p><sub>Version</sub><br><a href="VERSION.md"><strong>0.2.0</strong></a><br><strong>IN DEVELOPMENT</strong></p>
-      <a href="https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.0/CyCLAPBridgeStudio-0.2.0-Windows-AMD64.zip">Download Windows x64</a><br><sub>Linux / macOS · prepared sources</sub>
+      <p><sub>Version</sub><br><a href="VERSION.md"><strong>0.2.1</strong></a><br><strong>IN DEVELOPMENT</strong></p>
+      <a href="https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.1/CyCLAPBridgeStudio-0.2.1-Windows-AMD64.zip">Download Windows x64</a><br><sub>Linux / macOS · prepared sources</sub>
     </td>
   </tr>
 </table>
@@ -19,7 +19,7 @@
 
 Standalone C++20 library, CLI and CyUI desktop application for hosting audio plugins and creating format wrappers. For plugin users building wrappers and DAW developers integrating hosting. The audio library has no dependency on CyAudioCore, CyDSP, CyDAW or CyUI. Studio links its own optional UI dependencies.
 
-> **IN DEVELOPMENT · 0.2.0** — Studio now shares one interface across Windows, Linux and macOS. Windows x64 is validated; native Linux/macOS builds remain to be validated. Apple plugin integration tests are deferred. Read the [version notes and limitations](VERSION.md).
+> **IN DEVELOPMENT · 0.2.1** — Studio includes native chat and authenticated local MCP through CyMCPSDK 0.7.0. The Windows ZIP includes Studio and the JSON CLI. Windows x64 is validated; native Linux/macOS builds remain to be validated. Apple plugin integration tests are deferred. Read the [version notes and limitations](VERSION.md).
 
 [![CyCLAPBridge Studio with its conversion form, language and theme selectors](assets/screenshots/studio-en.png)](assets/screenshots/studio-en.png)
 
@@ -30,6 +30,19 @@ Standalone C++20 library, CLI and CyUI desktop application for hosting audio plu
 The CLI also inspects modules. An optional resource directory preserves imports and assets. Keep the wrapper, `CyCLAPBridge-payload` and notices together. Conversion adapts an API around the original payload; it does not recompile that plugin or change its redistribution terms.
 
 The static library exposes `cybridge::HostedPlugin` and direct `cybridge::ClapPlugin` hosting. Public headers keep plugin SDKs private. The DAW selects the process and owns workers, IPC, crash recovery and security sandboxing. Instances and buffers remain local to that process. Foreign plugins/scripts retain their own real-time behavior.
+
+## Assistants in Studio
+
+Open **Chat** and select a provider under **Providers**, or connect the local Markdown demo. Providers that support tools can request inspections and conversions directly from the chat. **External assistants (MCP)** lets a local MCP client use the same tools. See **Assistants in Studio** (`Documentation/Documentation.html#/en/studio/assistants`) in the checkout manual for setup and tool details.
+
+
+To connect a client, start the server under **External assistants (MCP)** and choose **Copy MCP connection**. Use the copied URL and Bearer header. Studio asks you to approve inspections and conversions before starting them. The CLI uses the same registry. Pass `--mcp-url` to target a running Studio and supply the token in `CYCLAPBRIDGE_MCP_TOKEN`.
+
+```sh
+cyclapbridge-cli tools list
+cyclapbridge-cli tools describe convert_plugin
+cyclapbridge-cli tools call list_formats
+```
 
 ## Formats
 
@@ -48,9 +61,9 @@ AAX is excluded. A JSFX script cannot load arbitrary native plugins without a RE
 
 ## Installation
 
-Download the [Windows x64 application ZIP](https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.0/CyCLAPBridgeStudio-0.2.0-Windows-AMD64.zip) from the [0.2.0 pre-release](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.0). Studio needs an OpenGL 3.0 desktop driver. Plugin conversion requires **CMake 3.27+**, **Visual Studio 2022 Desktop development with C++** and a Windows SDK; the application itself is already compiled. Linux/macOS binaries remain pending native validation; see [platform builds](docs/Platforms.md). Plugin folders are not modified automatically.
+Download the [Windows x64 application ZIP](https://github.com/MrMybal/CyCLAPBridge/releases/download/v0.2.1/CyCLAPBridgeStudio-0.2.1-Windows-AMD64.zip) from the [0.2.1 pre-release](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.1). Studio needs an OpenGL 3.0 desktop driver. Plugin conversion requires **CMake 3.27+**, **Visual Studio 2022 Desktop development with C++** and a Windows SDK; the application itself is already compiled. Linux/macOS binaries remain pending native validation; see [platform builds](docs/Platforms.md). Plugin folders are not modified automatically.
 
-The Studio application ZIP has `CyCLAPBridgeStudio.exe` directly at its root on Windows. Extract the complete ZIP and launch it; keep its `Resources` folder beside it. The application is already compiled. Format conversion still needs CMake and the native C++ toolchain described above. F1 opens the included manual. The separate developer installation provides `bin/cyclapbridge-cli.exe`, headers and the static library. Open `Documentation/Documentation.html` from the checkout, or `share/CyCLAPBridge/Documentation/Documentation.html` from a developer installation. Keep the whole manual directory. The [online manual](https://mrmybal.github.io/CyCLAPBridge/#/en/overview) opens the same reader in your browser; the included HTML remains available locally.
+The Studio application ZIP has `CyCLAPBridgeStudio.exe` directly at its root on Windows. Extract the complete ZIP and launch it; keep its `Resources` folder beside it. The application is already compiled. Format conversion still needs CMake and the native C++ toolchain described above. F1 opens the included manual. The separate developer installation provides `bin/cyclapbridge-cli.exe`, headers and the static library. Open `Documentation/Documentation.html` from the checkout, or `share/CyCLAPBridge/Documentation/Documentation.html` from a developer installation. Keep the whole manual directory. The ZIP includes the 0.2.1 HTML manual. The [online manual](https://mrmybal.github.io/CyCLAPBridge/#/en/overview) currently covers 0.2.0.
 
 ## Sources and build
 
@@ -64,7 +77,7 @@ cmake --build build/release --config Release
 cmake --install build/release --config Release --prefix dist/CyCLAPBridge
 ```
 
-SDKs are pinned; LV2/ysfx runtimes are retained snapshots. Configuration and conversion do not download dependencies. The default installation supplies the offline conversion sources. The Windows Studio preset links the MSVC runtime statically. Application packages are separate from the developer SDK; see [platform prerequisites](docs/Platforms.md).
+Studio and the CLI compile CyMCPSDK from a sibling checkout, or from the pinned `third_party/CyMCPSDK` submodule when local sources are unavailable. SDKs are pinned; LV2/ysfx runtimes are retained snapshots. Configuration and conversion do not download dependencies. The default installation supplies the offline conversion sources. The Windows Studio preset links the MSVC runtime statically. Application packages are separate from the developer SDK; see [platform prerequisites](docs/Platforms.md).
 
 <details>
 <summary>Static library integration and optional targets</summary>
@@ -83,6 +96,8 @@ Studio uses CyUI with GLFW/OpenGL; these targets are excluded from a library-onl
 </details>
 
 ## CLI examples
+
+The Studio ZIP includes the CLI. Use `cyclapbridge-cli tools --help` to list, describe and call the same operations as Studio. See **Call Studio tools** in the included CLI manual for JSON output and instance targeting.
 
 ```sh
 cyclapbridge-cli capabilities
@@ -108,6 +123,7 @@ Original code uses [MIT](LICENSE). The pinned **VST3 SDK 3.8.0 build 66 is MIT**
 | [LV2](https://github.com/lv2/lv2), [Lilv](https://github.com/lv2/lilv), [Serd](https://github.com/drobilla/serd), [Sord](https://github.com/drobilla/sord), [Sratom](https://github.com/lv2/sratom), [Zix](https://github.com/drobilla/zix) | [ISC notices](third_party/licenses/) | Static discovery, metadata and LV2 hosting |
 | [ysfx](https://github.com/jpcima/ysfx), WDL/LICE and embedded components | [Apache-2.0, Zlib, MIT/ISC and component terms](third_party/licenses/ysfx.txt); parser GPL-2.0-or-later **with Bison-exception-2.2** | JSFX audio/Windows `@gfx`; parser exception permits a separate larger-work license |
 | fmt and PreSonus declarations in clap-wrapper | [MIT and public-domain notices](THIRD_PARTY.md) | Wrapper formatting/interfaces |
+| [CyMCPSDK 0.7.0](https://github.com/MrMybal/CyMCPSDK) | [MIT](https://github.com/MrMybal/CyMCPSDK/blob/791d4d7d7680213b282ec8529d248a10f8494d77/LICENSE), pinned notices | Studio chat, local MCP and JSON CLI |
 | [CyUI](https://github.com/MrMybal/CyUI), [Dear ImGui](https://github.com/ocornut/imgui), [GLFW](https://github.com/glfw/glfw) | MIT / zlib, [pinned terms](THIRD_PARTY.md) | Studio only; one ImGui target, Core/FilePicker and native window/OpenGL backends |
 | [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) | SIL OFL 1.1, [retained notice](https://github.com/MrMybal/CyUI/blob/7019916ac1de987f86cef43b54a8f16fb0c6c9fc/third_party/jetbrains-mono/OFL.txt) | Font embedded by CyUI; Studio only |
 | [CyDoc](https://github.com/MrMybal/CyDoc) | [MIT](Documentation/DocData/licenses/CyDoc.txt) | Separate offline manual; no C++ runtime dependency |
