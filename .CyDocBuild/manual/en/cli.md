@@ -5,7 +5,7 @@ description: Inspect modules, select plugin IDs, generate wrappers and resume bu
 section: Manual
 parent: overview
 order: 20
-revision: 2
+revision: 3
 ---
 
 ## Inspect capabilities {#inspect}
@@ -49,9 +49,9 @@ cyclapbridge-cli tools describe convert_plugin
 cyclapbridge-cli tools call list_formats
 ```
 
-These commands emit one JSON object on stdout. **List** returns `tools`, **describe** returns `tool` and **call** returns `result`. Exit codes are `0` for success, `2` for invalid usage or JSON, `3` for a tool error and `4` for a connection or protocol error. Errors return an `error` object. A successful receipt in state `awaiting_approval` means the request is queued. Use `get_job` with its `job_id` for the final status.
+These commands emit one JSON object on stdout. **List** returns `tools`, **describe** returns `tool` and **call** returns `result`. Exit codes are `0` for success, `2` for invalid usage or JSON, `3` for a tool error and `4` for a connection or protocol error. Errors return an `error` object. A receipt in state `queued` means Studio will run the request automatically. `awaiting_approval` waits for confirmation. Use `get_job` with its `job_id` for the final status.
 
-Without a Studio URL, the CLI describes the whole registry and executes `list_formats`. The other tools use the open Studio's files, approvals and jobs. To target one instance, start its **External assistants (MCP)** server and copy its connection. Pass the copied URL as `--mcp-url` and place its Bearer token in `CYCLAPBRIDGE_MCP_TOKEN`. Use `--mcp-token-env NAME` to read a different environment variable. Pass an argument object with `--args` or read it from a file with `--args-file`. The URL must be the loopback URL given by that Studio instance.
+Without a Studio URL, the CLI describes the whole registry and executes `list_formats`. The other tools use the open Studio's files, approvals and jobs. To target one instance, start its **External assistants (MCP)** server and copy its connection. Pass the copied URL as `--mcp-url`. Free and Local controlled need only that address. For Token only or Protected, place the copied Bearer token in `CYCLAPBRIDGE_MCP_TOKEN`. Use `--mcp-token-env NAME` to read a different environment variable. Pass an argument object with `--args` or read it from a file with `--args-file`. The URL must be the loopback URL given by that Studio instance.
 
 The `capabilities`, `inspect`, `convert` and `build` commands keep their existing options and output. They run directly without Studio.
 

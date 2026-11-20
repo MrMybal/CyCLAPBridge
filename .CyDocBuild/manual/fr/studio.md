@@ -5,7 +5,7 @@ description: Choisir une source et livrer un plugin compilé dans un autre forma
 section: Manuel
 parent: overview
 order: 10
-sourceRevision: 7
+sourceRevision: 8
 ---
 
 ```image
@@ -47,7 +47,16 @@ Choisir l’anglais ou le français et un thème en haut. Les préférences sont
 2. Pour une conversation avec une IA, utiliser **Détecter les fournisseurs** pour repérer les CLI installées, les clés API configurées et les services locaux démarrés, ou choisir un fournisseur manuellement. Sélectionner la connexion et se connecter. La réponse s’affiche au fil de sa génération et **Arrêter** interrompt la réponse en cours. Un fournisseur CLI utilise le programme installé et déjà authentifié. Un fournisseur API utilise la clé de la variable d’environnement indiquée, si elle est nécessaire. Pour un moteur local installé, utiliser l’adresse de son service. Si Studio propose une liste de modèles, choisir un modèle et se reconnecter.
 3. Avec un fournisseur compatible, laisser **Donner à ce tchat accès aux outils de Studio** coché lors de la connexion. Demander une inspection ou une conversion et donner les chemins utiles. Vérifier la demande dans Studio, puis choisir **Exécuter la demande** ou **Refuser**. N’approuver que les fichiers de confiance, car l’inspection et certaines conversions exécutent le code du plugin.
 
-Pour un assistant externe sur la même machine, ouvrir **Assistants externes (MCP)** et choisir **Démarrer le serveur MCP local**. **Copier la connexion MCP** fournit l’URL HTTP et l’en-tête Bearer à renseigner dans le client MCP. Garder le jeton privé. **Arrêter le serveur MCP local** le révoque. Un redémarrage du serveur fournit une nouvelle connexion.
+Pour un assistant externe sur la même machine, ouvrir **Assistants externes (MCP)**, choisir un profil et démarrer le serveur. **Copier la connexion MCP** fournit l’adresse locale. Pour un profil à jeton, la copie contient aussi l’en-tête Bearer.
+
+| Profil | Jeton Bearer | Confirmation des inspections et conversions |
+| --- | --- | --- |
+| **Free** (par défaut) | Non | Non |
+| **Local contrôlé** | Non | Oui |
+| **Jeton seul** | Oui | Non |
+| **Protégé** | Oui | Oui |
+
+Le serveur est arrêté au démarrage de Studio. L’arrêter avant de changer de profil. Studio mémorise le choix dans `Studio.ini` sous `mcp_access_profile`. Les préférences sans profil utilisent Free. Le serveur écoute sur `127.0.0.1` pour les processus de la même machine. Garder les jetons privés et recopier la connexion après un redémarrage.
 
 Cocher **Enregistrer l’historique sur cet ordinateur** avant de se connecter pour enregistrer chaque tour sous un nouvel ID. Pour reprendre la conversation, sélectionner le même fournisseur, saisir cet ID et choisir **Restaurer le tchat enregistré**.
 
@@ -62,7 +71,7 @@ L’inspection et la conversion renvoient un ID dès la demande. Une conversion 
 
 ### Périmètre des outils MCP {#assistant-scope}
 
-Choisir **Exécuter la demande** pour autoriser exactement l’entrée, la destination et les options affichées. **Refuser** laisse l’entrée et la destination intactes. Une conversion lancée suit le parcours habituel de Studio. Les conversions en cours ne proposent ni annulation ni reprise. Studio garde en mémoire les huit derniers résultats de demandes d’assistants pendant la session.
+Le tchat intégré et les deux profils avec confirmation affichent l’entrée, la destination et les options. Choisir **Exécuter la demande** pour les valider. Les autres profils mettent automatiquement les demandes externes en file. Tous les profils valident les arguments des outils. **Refuser** laisse l’entrée et la destination intactes. Une conversion lancée suit le parcours habituel de Studio. Les conversions en cours ne proposent ni annulation ni reprise. Studio garde en mémoire les huit derniers résultats de demandes d’assistants pendant la session.
 
 La sélection de fichiers, l’ouverture du résultat dans l’explorateur et l’apparence restent des actions de l’interface. Les outils prennent des chemins explicites et renvoient le dossier de sortie au client. Studio reçoit les appels MCP pour ses propres fonctions audio. L’inspection et la conversion sont autonomes et ne nécessitent pas l’importation d’outils d’autres applications.
 

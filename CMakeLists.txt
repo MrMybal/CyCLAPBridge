@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
-project(CyCLAPBridge VERSION 0.2.1 LANGUAGES CXX)
+project(CyCLAPBridge VERSION 0.2.2 LANGUAGES CXX)
 if(MSVC)
   add_compile_options(/experimental:deterministic "/pathmap:${CMAKE_CURRENT_SOURCE_DIR}=.")
 else()

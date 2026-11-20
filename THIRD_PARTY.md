@@ -74,8 +74,8 @@ runtime or documentation generator is linked into the C++ library or Studio.
 | Dear ImGui 1.93.1 WIP, docking | https://github.com/ocornut/imgui | cf53467ab0db7a783f04b32dd9160e6aa5b720ef | MIT and embedded stb terms; one target supplied to CyUI |
 | JetBrains Mono Regular 2.304 | CyUI's retained font snapshot | Same CyUI revision | SIL OFL 1.1; font embedded by Core |
 
-Studio and the CLI link [CyMCPSDK 0.7.0](https://github.com/MrMybal/CyMCPSDK),
-revision `791d4d7d7680213b282ec8529d248a10f8494d77` (MIT), for ChatUI, AI providers
+Studio and the CLI link [CyMCPSDK 0.7.1](https://github.com/MrMybal/CyMCPSDK),
+revision `34d4bcae126bc83d1a2925b5047dac36e3d09d92` (MIT), for ChatUI, AI providers
 and the loopback MCP server. This pin was imported from the local SDK repository. The tested Windows build and package use that same revision. The package records it in Resources/CyMCPSDK-revision.txt. The application installs the SDK's MIT, nlohmann/json,
 cpp-httplib and PicoSHA2 notices. The CyUI document modules retain the MD4C,
 Lexilla, Scintilla and stb notices. On Linux/macOS the SDK uses the host libcurl

@@ -2,7 +2,13 @@
 
 [README](README.fr.md) · [English](VERSION.md)
 
-**Bibliothèque, Studio et CLI : 0.2.1 · EN DÉVELOPPEMENT**
+**Bibliothèque, Studio et CLI : 0.2.2 · EN DÉVELOPPEMENT**
+
+## Changements dans la 0.2.2
+
+- CyMCPSDK 0.7.1 ajoute quatre profils pour le serveur MCP local. Free accepte l’adresse seule et lance automatiquement les demandes externes.
+- Les préférences sans profil passent à Free. Studio conserve les choix explicites et démarre avec le serveur arrêté.
+- La CLI JSON accepte l’adresse seule en Free et Local contrôlé. Jeton seul et Protégé demandent un jeton Bearer.
 
 ## Changements dans la 0.2.1
 
@@ -27,6 +33,6 @@
 - L’API commune ne promet pas float64, SysEx, MIDI 2, modulation par voix ou traduction complète du transport.
 - Les UI LV2 Atom/patch, l’adaptation Gtk/Qt, le dépôt de fichiers JSFX et les éditeurs VST3/LV2/JSFX hors Windows restent hors de l’intégration actuelle.
 - Les DAW fournissent la supervision des processus, l’IPC et l’isolation de sécurité. Le code étranger conserve son comportement temps réel.
-- Studio propose l’anglais par défaut et le français. Le ZIP applicatif Windows x64 est disponible dans la [préversion 0.2.1](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.1) ; son périmètre de compatibilité suit les limites ci-dessus.
+- Studio propose l’anglais par défaut et le français. Le ZIP applicatif Windows x64 est disponible dans la [préversion 0.2.2](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.2) ; son périmètre de compatibilité suit les limites ci-dessus.
 
 Ces notes ne maintiennent pas de liste détaillée de bugs confirmés. Consulter le [suivi des problèmes](https://github.com/MrMybal/CyCLAPBridge/issues) ; l’accès au dépôt peut être nécessaire. Cela ne signifie pas qu’il n’existe aucun bug.

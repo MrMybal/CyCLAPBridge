@@ -57,8 +57,8 @@ void checkLegacyClient(const std::string& endpoint, const std::string& token) {
     request.method = "POST";
     request.url = endpoint;
     request.headers = {{"Content-Type", "application/json"},
-                       {"Accept", "application/json, text/event-stream"},
-                       {"Authorization", "Bearer " + token}};
+                       {"Accept", "application/json, text/event-stream"}};
+    if (!token.empty()) request.headers["Authorization"] = "Bearer " + token;
     request.body = R"({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"historical-probe","version":"1"}}})";
     auto response = cymcp::HttpClient().perform(request);
     const auto initialized = cymcp::parse_json(response.body);
@@ -75,19 +75,31 @@ void checkLegacyClient(const std::string& endpoint, const std::string& token) {
             "Legacy MCP catalogue was not preserved");
 }
 
-void runLiveClient(const fs::path& fixture, const fs::path& work, const fs::path& cli) {
+void runLiveClient(const fs::path& fixture, const fs::path& work,
+                   const std::string& profile, const fs::path& cli) {
+    const bool protectedAccess = profile == "protected";
+    const bool controlled = protectedAccess || profile == "local_controlled";
+    const bool tokenRequired = protectedAccess || profile == "token_only";
     std::string line;
     require(static_cast<bool>(std::getline(std::cin, line)), "Studio did not provide a connection");
     const auto config = cymcp::parse_json(line);
     const auto endpoint = config.at("url").get<std::string>();
     const auto token = config.at("token").get<std::string>();
+    require(!token.empty() == tokenRequired, "Studio used the wrong transport authentication");
     checkLegacyClient(endpoint, token);
     cymcp::HttpRequest anonymous;
     anonymous.method = "POST";
     anonymous.url = endpoint;
-    anonymous.headers["Content-Type"] = "application/json";
-    anonymous.body = R"({"jsonrpc":"2.0","id":1,"method":"initialize","params":{}})";
-    require(cymcp::HttpClient().perform(anonymous).status == 401, "Live server accepted anonymous access");
+    anonymous.headers = {{"Content-Type", "application/json"},
+                         {"Accept", "application/json, text/event-stream"}};
+    anonymous.body = R"({"jsonrpc":"2.0","id":10,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"auth-probe","version":"1"}}})";
+    const auto status = cymcp::HttpClient().perform(anonymous).status;
+    require(status == (tokenRequired ? 401 : 200), "Live profile applied the wrong Bearer requirement");
+    if (!tokenRequired) {
+        anonymous.headers["Origin"] = "https://example.invalid";
+        require(cymcp::HttpClient().perform(anonymous).status == 403,
+                "Tokenless server ignored its Origin policy");
+    }
 
     cymcp::McpClient client(endpoint, token);
     client.connect();
@@ -112,16 +124,27 @@ void runLiveClient(const fs::path& fixture, const fs::path& work, const fs::path
         require(description.at("tool").at("name") == "inspect_plugin", "CLI description mismatch");
         require(invokeCli(cli, endpoint, token, 0, {"tools", "call", "list_formats"}).at("result") == formats,
                 "Live CLI and MCP catalogues differ");
-        require(invokeCli(cli, endpoint, cymcp::random_token(), 4, {"tools", "list"}).contains("error"),
-                "CLI did not fail with an invalid token");
+        if (tokenRequired) {
+            require(invokeCli(cli, endpoint, "", 4, {"tools", "list"}).contains("error"),
+                    "CLI connected to a token profile with only the address");
+            require(invokeCli(cli, endpoint, cymcp::random_token(), 4, {"tools", "list"}).contains("error"),
+                    "CLI did not fail with an invalid token");
+        }
     }
 
+    require(client.call_tool("inspect_plugin", {{"source", "jsfx"}}).at("isError") == true,
+            "Schema validation failed to reject a missing input");
+    require(client.call_tool("inspect_plugin", {{"source", "jsfx"}, {"input_path", "relative.jsfx"}})
+                .at("isError") == true, "A relative input path passed validation");
+
     const auto wait = [&](const Json& receipt) {
-        require(receipt.at("state") == "awaiting_approval", "Request bypassed Studio approval");
+        require(receipt.at("state") == (controlled ? "awaiting_approval" : "queued"),
+                "The live access profile applied the wrong confirmation policy");
         const Json id = {{"job_id", receipt.at("job_id")}};
         for (const auto end = cymcp::Clock::now() + 6min; cymcp::Clock::now() < end;) {
             const auto job = call(client, "get_job", id);
-            if (job.at("state") != "awaiting_approval" && job.at("state") != "running")
+            if (job.at("state") != "awaiting_approval" && job.at("state") != "queued" &&
+                job.at("state") != "running")
                 return job;
             std::this_thread::sleep_for(150ms);
         }
@@ -134,12 +157,19 @@ void runLiveClient(const fs::path& fixture, const fs::path& work, const fs::path
             inspect.at("result").at("parameters").get<int>() > 0,
             "Live Studio did not inspect the JSFX fixture");
 
+    if (profile == "local_controlled" || profile == "token_only") {
+        std::cout << "Live Studio access and inspection passed for " << profile << '\n';
+        return;
+    }
+
     args["target"] = "clap";
     args["output_name"] = "LiveMcpGain";
-    args["output_folder"] = cymcp::path_utf8(work / "declined");
-    const auto denied = wait(call(client, "convert_plugin", args));
-    require(denied.at("state") == "declined" && !fs::exists(work / "declined"),
-            "A declined conversion changed the filesystem");
+    if (controlled) {
+        args["output_folder"] = cymcp::path_utf8(work / "declined");
+        const auto denied = wait(call(client, "convert_plugin", args));
+        require(denied.at("state") == "declined" && !fs::exists(work / "declined"),
+                "A declined conversion changed the filesystem");
+    }
     const auto output = work / "approved";
     args["output_folder"] = cymcp::path_utf8(output);
     const auto receipt = cli.empty() ? call(client, "convert_plugin", args)
@@ -149,7 +179,7 @@ void runLiveClient(const fs::path& fixture, const fs::path& work, const fs::path
     require(built.at("result").at("output_folder") == cymcp::path_utf8(output),
             "Live Studio reported an unexpected output folder");
     require(fs::exists(output / "LiveMcpGain.clap"), "Live Studio did not produce the wrapper");
-    std::cout << "Live Studio discovery, read, approved build and denied access passed.\n";
+    std::cout << "Live Studio discovery, inspection and conversion passed for " << profile << '\n';
 }
 
 void checkLegacyHistory(const fs::path& archive, const fs::path& work) {
@@ -286,6 +316,8 @@ void run(const cybridge::BackendPaths& backend, const fs::path& fixture,
     Model model;
     StudioTools tools(model);
     require(tools.endpoint().empty(), "MCP must be off at startup");
+    require(tools.setAccessProfile(cymcp::LocalAccessProfile::protected_access),
+            "Cannot select the protected profile");
     tools.startServer();
     cymcp::HttpRequest unauthenticated;
     unauthenticated.method = "POST";
@@ -300,14 +332,6 @@ void run(const cybridge::BackendPaths& backend, const fs::path& fixture,
     require(catalogue.size() == 4, "Incomplete MCP tool catalogue");
     const auto externalFormats = call(client, "list_formats", Json::object());
     const auto chatFormats = tools.registry()->invoke("list_formats", Json::object());
-    cymcp::CallContext denied;
-    denied.principal = "untrusted";
-    try {
-        tools.registry()->invoke("list_formats", Json::object(), denied);
-        throw std::runtime_error("Registry accepted a denied principal");
-    } catch (const cymcp::Error& e) {
-        require(e.code == "AccessDenied", "Registry returned an unexpected denial");
-    }
     require(externalFormats == chatFormats, "Chat and external MCP expose different formats");
 #ifndef __APPLE__
     for (const auto& direction : externalFormats.at("conversions"))
@@ -349,10 +373,15 @@ void run(const cybridge::BackendPaths& backend, const fs::path& fixture,
     require(fs::exists(output / "McpGain.clap"), "Compiled CLAP wrapper is missing");
     require(fs::is_directory(output / "CyCLAPBridge-licenses"), "Missing wrapper notices");
 
-    checkEmbeddedChat(tools, input, backend, options, work);
-
     const auto oldToken = tools.token();
     tools.stopServer();
+    require(tools.setAccessProfile(cymcp::LocalAccessProfile::free), "Cannot reopen as Free");
+    tools.startServer();
+    checkEmbeddedChat(tools, input, backend, options, work);
+
+    tools.stopServer();
+    require(tools.setAccessProfile(cymcp::LocalAccessProfile::protected_access),
+            "Cannot reopen as Protected");
     tools.startServer();
     require(tools.token() != oldToken, "MCP restart reused the previous token");
     unauthenticated.url = tools.endpoint();
@@ -367,9 +396,9 @@ int main(int argc, char** argv) {
             checkLegacyHistory(fs::absolute(argv[2]), fs::absolute(argv[3]));
             return 0;
         }
-        if ((argc == 4 || argc == 5) && std::string_view(argv[1]) == "--live-client") {
-            runLiveClient(fs::absolute(argv[2]), fs::absolute(argv[3]),
-                          argc == 5 ? fs::absolute(argv[4]) : fs::path{});
+        if ((argc == 5 || argc == 6) && std::string_view(argv[1]) == "--live-client") {
+            runLiveClient(fs::absolute(argv[2]), fs::absolute(argv[3]), argv[4],
+                          argc == 6 ? fs::absolute(argv[5]) : fs::path{});
             return 0;
         }
         if (argc != 5) return 2;

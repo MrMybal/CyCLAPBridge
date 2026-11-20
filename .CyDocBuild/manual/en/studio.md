@@ -5,7 +5,7 @@ description: Select a source and deliver a compiled plugin in another format.
 section: Manual
 parent: overview
 order: 10
-revision: 7
+revision: 8
 ---
 
 ```image
@@ -47,7 +47,16 @@ Choose English or French and a theme at the top. Preferences are saved in the op
 2. For an AI conversation, choose **Detect providers** to find installed CLIs, configured API credentials and running local endpoints, or select a provider manually. Select the connection and connect. Studio streams the reply and **Stop** cancels the current reply. A native CLI provider uses the installed, signed-in CLI. An API provider uses the key from the named environment variable, if required. For an installed local model service, use its endpoint. If Studio offers a model list, choose a model and connect again.
 3. For a provider that supports tools, keep **Give this chat access to Studio tools** selected when connecting. Ask for an inspection or conversion and supply the relevant paths. Review the request in Studio and choose **Run request** or **Decline**. Only approve plugin files you trust, since inspection and some conversions run plugin code.
 
-For an external assistant on the same machine, expand **External assistants (MCP)** and choose **Start local MCP server**. **Copy MCP connection** gives you the HTTP URL and Bearer header for an MCP client. Paste the value into that client's server configuration. Keep the token private. **Stop local MCP server** revokes it. Starting the server again gives you a new connection.
+For an external assistant on the same machine, expand **External assistants (MCP)**, choose a profile and start the server. **Copy MCP connection** provides the loopback address. For a token profile, it also includes the Bearer header.
+
+| Profile | Bearer token | Confirm inspections and conversions |
+| --- | --- | --- |
+| **Free** (default) | No | No |
+| **Local controlled** | No | Yes |
+| **Token only** | Yes | No |
+| **Protected** | Yes | Yes |
+
+The server is off when Studio starts. Stop it before switching profiles. Studio saves the choice in `Studio.ini` under `mcp_access_profile`. Existing settings without a profile use Free. Only processes on the same computer can use the listener at `127.0.0.1`. Keep tokens private and copy the connection again after restarting the server.
 
 Turn on **Save chat history locally** before connecting to save each turn under a new history ID. To resume, select the same provider, enter that ID and choose **Restore saved chat**.
 
@@ -62,7 +71,7 @@ Inspection and conversion return a job ID immediately. A completed conversion wr
 
 ### Scope of the MCP tools {#assistant-scope}
 
-Use **Run request** to approve the exact input, destination and options shown in Studio. **Decline** leaves the input and destination untouched. A running conversion uses the regular Studio build workflow. Conversion jobs have no cancel or resume operation, and the eight most recent assistant job results are kept in memory for the Studio session.
+The integrated chat and the two profiles with confirmation show the input, destination and options. Choose **Run request** to approve them. The other profiles queue external jobs automatically. All profiles validate the tool arguments. **Decline** leaves the input and destination untouched. A running conversion uses the regular Studio build workflow. Conversion jobs have no cancel or resume operation, and the eight most recent assistant job results are kept in memory for the Studio session.
 
 File selection, opening the result in the system file browser and appearance settings are local interface actions. The tools take explicit paths and return the output folder so clients can use it directly. Studio accepts incoming MCP calls for its own audio functions. It does not import tool catalogues from other apps because inspection and conversion are self-contained.
 

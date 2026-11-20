@@ -51,11 +51,13 @@ if(TARGET CyCLAPBridgeStudio)
   add_test(NAME cybridge-studio-history-upgrade COMMAND cybridge-studio-mcp --restore-legacy
     "${CMAKE_CURRENT_SOURCE_DIR}/fixtures/legacy-056.json" "${CMAKE_BINARY_DIR}/test-work/history")
   set_tests_properties(cybridge-studio-history-upgrade PROPERTIES TIMEOUT 30)
-  add_test(NAME cybridge-studio-live-mcp
-    COMMAND cybridge-studio-live-host --mcp-live-test "$<TARGET_FILE:cybridge-studio-mcp>"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Gain.jsfx" "${CMAKE_BINARY_DIR}/live"
-    "${CMAKE_COMMAND}" ${_live_cli})
-  set_tests_properties(cybridge-studio-live-mcp PROPERTIES TIMEOUT 480)
+  foreach(profile IN ITEMS free local_controlled token_only protected)
+    add_test(NAME cybridge-studio-live-mcp-${profile}
+      COMMAND cybridge-studio-live-host --mcp-live-test "$<TARGET_FILE:cybridge-studio-mcp>"
+      "${CMAKE_CURRENT_SOURCE_DIR}/Gain.jsfx" "${CMAKE_BINARY_DIR}/live"
+      "${CMAKE_COMMAND}" ${profile} ${_live_cli})
+    set_tests_properties(cybridge-studio-live-mcp-${profile} PROPERTIES TIMEOUT 480)
+  endforeach()
 endif()
 if(WIN32)
   target_compile_definitions(cybridge-gain-fixture PRIVATE NOMINMAX UNICODE _UNICODE)

@@ -51,7 +51,7 @@ Json jobIdField() { return stringField("Opaque Studio job ID.", 64); }
 Json jobReceiptSchema() {
     return objectSchema({
         {"job_id", jobIdField()},
-        {"state", {{"type", "string"}, {"const", "awaiting_approval"}}}
+        {"state", {{"type", "string"}, {"enum", {"queued", "awaiting_approval"}}}}
     }, {"job_id", "state"});
 }
 
@@ -70,7 +70,7 @@ Json jobStatusSchema() {
         {"job_id", jobIdField()},
         {"operation", {{"type", "string"}, {"enum", {"inspect_plugin", "convert_plugin"}}}},
         {"state", {{"type", "string"},
-                   {"enum", {"awaiting_approval", "running", "succeeded", "failed", "declined"}}}},
+                   {"enum", {"queued", "awaiting_approval", "running", "succeeded", "failed", "declined"}}}},
         {"result", {{"anyOf", result}}}, {"error", text}, {"log", text}
     }, {"job_id", "operation", "state", "result", "error", "log"});
 }
@@ -114,6 +114,11 @@ std::string formatId(Format format) {
     return id;
 }
 
+bool isExternal(const cymcp::CallContext& context) {
+    return context.principal == "authenticated-local" ||
+           context.principal == "unauthenticated-local";
+}
+
 Json inspect(const Json& args) {
     HostedPlugin plugin(parseFormat(args.at("source").get<std::string>()),
                         absolutePath(args, "input_path"), args.value("plugin_id", std::string{}));
@@ -124,14 +129,22 @@ Json inspect(const Json& args) {
 }
 }
 
+const McpAccessOption& mcpAccessOption(cymcp::LocalAccessProfile profile) {
+    for (const auto& option : mcpAccessOptions)
+        if (option.profile == profile)
+            return option;
+    return mcpAccessOptions.back();
+}
+
+cymcp::LocalAccessProfile parseMcpAccess(std::string_view id) {
+    for (const auto& option : mcpAccessOptions)
+        if (option.id == id)
+            return option.profile;
+    return cymcp::LocalAccessProfile::protected_access;
+}
+
 StudioTools::StudioTools(Model& model)
-    : model_(model), registry_(std::make_shared<cymcp::Registry>(
-        cymcp::Policy([](const cymcp::CallContext& ctx, const std::string&, const Json&) {
-            // The HTTP transport assigns its principal only after Bearer authentication.
-            // Embedded conversations use the local principal; running a job still requires UI approval.
-            return ctx.principal == "local" || ctx.principal == "authenticated-local"
-                ? cymcp::Decision::allow : cymcp::Decision::deny;
-        }))) {
+    : model_(model), registry_(std::make_shared<cymcp::Registry>(cymcp::Policy::allow_all())) {
     registry_->add({"list_formats",
         "List formats that this Studio can inspect and conversion directions supported by its "
         "native build. Check available before requesting a conversion.",
@@ -156,7 +169,8 @@ StudioTools::StudioTools(Model& model)
     };
     registry_->add({"inspect_plugin",
         "Request inspection of one trusted plugin or JSFX script. Loads the selected input in Studio "
-        "after the user approves. Returns a job ID. Use get_job to read metadata and bus/parameter counts.",
+        "automatically or after approval, according to the connection's access profile. "
+        "Use the returned job ID with get_job for metadata and bus/parameter counts.",
         objectSchema(input, {"source", "input_path"}), jobReceiptSchema(), false,
         [this](const auto& args, const auto& ctx) { return enqueue("inspect_plugin", args, ctx); }});
 
@@ -167,13 +181,14 @@ StudioTools::StudioTools(Model& model)
     input["bundle_id"] = stringField("Optional Apple bundle identifier.", 255);
     registry_->add({"convert_plugin",
         "Request a compiled audio plugin wrapper using the Studio toolchain and the supplied local paths. "
-        "The user approves the request in Studio. The new output folder receives the compiled wrapper, "
+        "Runs automatically or after Studio approval, according to the access profile. "
+        "The new output folder receives the compiled wrapper, "
         "payload and notices. Studio never overwrites an existing folder. Use get_job with the returned ID.",
         objectSchema(input, {"source", "input_path", "target", "output_folder"}), jobReceiptSchema(), false,
         [this](const auto& args, const auto& ctx) { return enqueue("convert_plugin", args, ctx); }});
 
     registry_->add({"get_job",
-        "Read an inspection or conversion job submitted by this channel. Returns awaiting_approval, "
+        "Read an inspection or conversion job submitted by this channel. Returns queued, awaiting_approval, "
         "running, succeeded, failed or declined, plus the result, error and available build log. "
         "Wait for approval or completion before polling again.",
         objectSchema({{"job_id", stringField("Job ID returned by inspect_plugin or convert_plugin.", 64)}},
@@ -200,18 +215,20 @@ Json StudioTools::enqueue(const char* operation, const Json& args, const cymcp::
 
     std::lock_guard lock(mutex_);
     context.cancellation.check();
-    if (!jobs_.empty() && (jobs_.back().state == "awaiting_approval" || jobs_.back().state == "running"))
-        throw Error("Busy", "Studio already has an assistant job awaiting approval or running.");
-    Request request{cymcp::random_token(16), operation, std::move(reviewed),
-                    context.principal == "authenticated-local"};
-    jobs_.push_back({std::move(request), "awaiting_approval", nullptr, {}, {}});
+    if (!jobs_.empty() && (jobs_.back().state == "queued" ||
+                          jobs_.back().state == "awaiting_approval" || jobs_.back().state == "running"))
+        throw Error("Busy", "Studio already has an assistant job waiting or running.");
+    const auto external = isExternal(context);
+    const auto automatically = external && !cymcp::local_access_settings(profile_).control_operations;
+    Request request{cymcp::random_token(16), operation, std::move(reviewed), external};
+    jobs_.push_back({std::move(request), automatically ? "queued" : "awaiting_approval", nullptr, {}, {}});
     if (jobs_.size() > 8) jobs_.pop_front();
     return {{"job_id", jobs_.back().request.id}, {"state", jobs_.back().state}};
 }
 
 Json StudioTools::status(const std::string& id, const cymcp::CallContext& context) const {
     std::lock_guard lock(mutex_);
-    const bool external = context.principal == "authenticated-local";
+    const bool external = isExternal(context);
     const auto job = std::find_if(jobs_.begin(), jobs_.end(), [&](const Job& item) {
         return item.request.id == id && item.request.external == external;
     });
@@ -231,9 +248,31 @@ std::optional<StudioTools::Request> StudioTools::pending() const {
     return {};
 }
 
-void StudioTools::approve(const BackendPaths& backend, BuildOptions options, const fs::path& workRoot) {
+bool StudioTools::queued() const {
     std::lock_guard lock(mutex_);
-    if (jobs_.empty() || jobs_.back().state != "awaiting_approval" || model_.busy())
+    return !jobs_.empty() && jobs_.back().state == "queued";
+}
+
+void StudioTools::approve(const BackendPaths& backend, BuildOptions options, const fs::path& workRoot) {
+    startWaiting("awaiting_approval", backend, std::move(options), workRoot);
+}
+
+void StudioTools::startQueued(const BackendPaths& backend, BuildOptions options, const fs::path& workRoot) {
+    startWaiting("queued", backend, std::move(options), workRoot);
+}
+
+void StudioTools::failQueued(const std::string& error) {
+    std::lock_guard lock(mutex_);
+    if (!jobs_.empty() && jobs_.back().state == "queued") {
+        jobs_.back().error = error;
+        jobs_.back().state = "failed";
+    }
+}
+
+void StudioTools::startWaiting(std::string_view state, const BackendPaths& backend,
+                               BuildOptions options, const fs::path& workRoot) {
+    std::lock_guard lock(mutex_);
+    if (jobs_.empty() || jobs_.back().state != state || model_.busy())
         return;
     auto& job = jobs_.back();
     const auto& args = job.request.arguments;
@@ -307,17 +346,28 @@ void StudioTools::poll() {
     }
 }
 
+bool StudioTools::setAccessProfile(cymcp::LocalAccessProfile profile) {
+    if (server_) return false;
+    profile_ = profile;
+    return true;
+}
+
 void StudioTools::startServer() {
     if (server_) return;
-    auto token = cymcp::random_token();
+    const auto access = cymcp::local_access_settings(profile_);
+    auto token = access.require_token ? cymcp::random_token() : std::string{};
     auto mcp = std::make_shared<cymcp::McpServer>(*registry_, "CyCLAPBridge Studio");
-    auto server = std::make_unique<cymcp::LocalHttpServer>(
-        token, [mcp, registry = registry_](const Json& request, const cymcp::CallContext& context) {
-            const auto method = request.value("method", std::string{});
-            if (method == "invoke" || method == "describe")
-                return cymcp::dispatch_app(*registry, request, context);
-            return mcp->handle(request, context);
-        });
+    cymcp::JsonEndpoint handler = [mcp, registry = registry_](const Json& request,
+                                                           const cymcp::CallContext& context) {
+        const auto method = request.value("method", std::string{});
+        if (method == "invoke" || method == "describe")
+            return cymcp::dispatch_app(*registry, request, context);
+        return mcp->handle(request, context);
+    };
+    auto server = access.require_token
+        ? std::make_unique<cymcp::LocalHttpServer>(token, std::move(handler))
+        : std::make_unique<cymcp::LocalHttpServer>(
+              cymcp::LocalHttpServer::UnauthenticatedLoopback{}, std::move(handler));
     endpoint_ = "http://127.0.0.1:" + std::to_string(server->start()) + "/mcp";
     token_ = std::move(token);
     server_ = std::move(server);

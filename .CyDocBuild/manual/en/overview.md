@@ -9,7 +9,7 @@ revision: 3
 
 ## Start here {#getting-started}
 
-CyCLAPBridge 0.2.1 is in development. It combines a static C++20 hosting library, a conversion CLI and a CyUI desktop Studio. The audio library is independent of other Cy projects and UI toolkits; the optional Studio uses CyUI.
+CyCLAPBridge 0.2.2 is in development. It combines a static C++20 hosting library, a conversion CLI and a CyUI desktop Studio. The audio library is independent of other Cy projects and UI toolkits; the optional Studio uses CyUI.
 
 For a plugin or script you want to use in another format, follow [Create a wrapper](doc:studio). For a DAW implementation, start with [Integrate the library](doc:library). The [format matrix](doc:formats) explains the supported directions and their boundaries.
 

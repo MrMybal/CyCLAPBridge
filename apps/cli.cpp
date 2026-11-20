@@ -18,7 +18,7 @@ std::filesystem::path path(const std::string& s) {
     return std::filesystem::path(std::u8string(reinterpret_cast<const char8_t*>(s.data()),s.size()));
 }
 void usage() {
-    std::cout << "CyCLAPBridge 0.2.1 - C++ plugin interoperability\n\n"
+    std::cout << "CyCLAPBridge 0.2.2 - C++ plugin interoperability\n\n"
       "  capabilities\n"
       "  tools list | tools describe NAME | tools call NAME (tools --help)\n"
       "  convert --input Plugin.clap --output NEW_PROJECT [--name NAME] [--build]\n"

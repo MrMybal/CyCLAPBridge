@@ -126,7 +126,6 @@ int remote(const Options& request) {
         endpoint.target != "/mcp" || endpoint.port <= 0)
         return failure(2, "InvalidEndpoint", "Use the http://127.0.0.1:PORT/mcp URL shown by Studio.");
     const auto token = tokenFromEnvironment(request.tokenEnv);
-    if (token.empty()) return failure(4, "MissingToken", "Set the token environment variable for Studio.");
     cymcp::McpClient client(request.url, token);
     client.connect();
     if (request.command == "list") {
@@ -181,7 +180,7 @@ int runTools(const std::vector<std::string>& args) {
     if (args.size() == 3 && (args[2] == "--help" || args[2] == "help")) {
         std::cout << "tools list | tools describe NAME | tools call NAME [--args JSON | --args-file FILE]\n"
             "Add --mcp-url http://127.0.0.1:PORT/mcp to target an open Studio.\n"
-            "The token comes from CYCLAPBRIDGE_MCP_TOKEN or --mcp-token-env VAR.\n"
+            "For a token profile, set CYCLAPBRIDGE_MCP_TOKEN or pass --mcp-token-env VAR.\n"
             "Without a Studio URL only list_formats can run. All tool descriptions are available.\n"
             "Exit codes: 0 success, 2 arguments, 3 tool error, 4 connection/protocol error.\n";
         return 0;

@@ -225,7 +225,25 @@ void StudioChat::drawProvider() {
 }
 
 void StudioChat::drawExternalAccess() {
-    if (tools_.endpoint().empty()) {
+    const bool stopped = tools_.endpoint().empty();
+    ImGui::BeginDisabled(!stopped);
+    const auto current = tools_.accessProfile();
+    if (ImGui::BeginCombo(cyui::trLabel("MCP access profile").c_str(),
+                          cyui::tr(mcpAccessOption(current).label).c_str())) {
+        for (const auto& option : mcpAccessOptions) {
+            if (ImGui::Selectable(cyui::tr(option.label).c_str(), option.profile == current))
+                tools_.setAccessProfile(option.profile);
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::EndDisabled();
+    const auto access = cymcp::local_access_settings(tools_.accessProfile());
+    cyui::textDim("%s", cyui::tr(access.require_token ? "Bearer token required." :
+        "Local clients can connect with the address alone.").c_str());
+    cyui::textDim("%s", cyui::tr(access.control_operations
+        ? "Studio asks before starting inspections or conversions."
+        : "Inspections and conversions start without a confirmation.").c_str());
+    if (stopped) {
         if (cyui::button(cyui::trLabel("Start local MCP server").c_str())) {
             try {
                 tools_.startServer();
@@ -236,10 +254,9 @@ void StudioChat::drawExternalAccess() {
     } else {
         ImGui::TextUnformatted(tools_.endpoint().c_str());
         if (cyui::button(cyui::trLabel("Copy MCP connection").c_str())) {
-            const cymcp::Json config{
-                {"url", tools_.endpoint()},
-                {"headers", {{"Authorization", "Bearer " + tools_.token()}}}
-            };
+            cymcp::Json config{{"url", tools_.endpoint()}};
+            if (!tools_.token().empty())
+                config["headers"] = {{"Authorization", "Bearer " + tools_.token()}};
             ImGui::SetClipboardText(config.dump(2).c_str());
         }
         ImGui::SameLine();

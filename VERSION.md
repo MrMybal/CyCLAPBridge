@@ -2,7 +2,13 @@
 
 [README](README.md) · [Français](VERSION.fr.md)
 
-**Library, Studio and CLI: 0.2.1 · IN DEVELOPMENT**
+**Library, Studio and CLI: 0.2.2 · IN DEVELOPMENT**
+
+## Changes in 0.2.2
+
+- CyMCPSDK 0.7.1 adds four selectable profiles for the loopback MCP server. Free uses the address alone and starts external requests automatically.
+- Settings without a profile use Free. Existing selections stay in place. Studio keeps the server off at launch.
+- The JSON CLI uses the address alone in Free and Local controlled. Token only and Protected require a Bearer token.
 
 ## Changes in 0.2.1
 
@@ -27,6 +33,6 @@
 - The common API does not promise float64, SysEx, MIDI 2, per-voice modulation or complete transport translation.
 - LV2 UI Atom/patch, Gtk/Qt adaptation, JSFX file-drop and non-Windows VST3/LV2/JSFX editors are outside current integration.
 - DAWs supply process supervision, IPC and security isolation. Foreign code retains its own real-time behavior.
-- Studio defaults to English and includes French. The Windows x64 application ZIP is available in [pre-release 0.2.1](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.1); its compatibility scope follows the limitations above.
+- Studio defaults to English and includes French. The Windows x64 application ZIP is available in [pre-release 0.2.2](https://github.com/MrMybal/CyCLAPBridge/releases/tag/v0.2.2); its compatibility scope follows the limitations above.
 
 These notes maintain no itemized confirmed-bug list. Consult the [issue tracker](https://github.com/MrMybal/CyCLAPBridge/issues); repository access may be required. This does not imply an absence of bugs.

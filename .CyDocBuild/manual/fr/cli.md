@@ -5,7 +5,7 @@ description: Inspecter les modules, choisir un ID, générer des wrappers et rep
 section: Manuel
 parent: overview
 order: 20
-sourceRevision: 2
+sourceRevision: 3
 ---
 
 ## Examiner les capacités {#inspect}
@@ -49,9 +49,9 @@ cyclapbridge-cli tools describe convert_plugin
 cyclapbridge-cli tools call list_formats
 ```
 
-Ces commandes écrivent un objet JSON sur la sortie standard. **List** renvoie `tools`, **describe** renvoie `tool` et **call** renvoie `result`. Les codes de sortie sont `0` pour la réussite, `2` pour une syntaxe ou un JSON invalide, `3` pour une erreur d’outil et `4` pour une erreur de connexion ou de protocole. Les erreurs sont renvoyées dans un objet `error`. Un retour réussi à l’état `awaiting_approval` indique que la demande est en attente. Utiliser `get_job` avec son `job_id` pour lire le résultat final.
+Ces commandes écrivent un objet JSON sur la sortie standard. **List** renvoie `tools`, **describe** renvoie `tool` et **call** renvoie `result`. Les codes de sortie sont `0` pour la réussite, `2` pour une syntaxe ou un JSON invalide, `3` pour une erreur d’outil et `4` pour une erreur de connexion ou de protocole. Les erreurs sont renvoyées dans un objet `error`. L’état `queued` indique que Studio lancera la demande automatiquement. L’état `awaiting_approval` attend une validation. Utiliser `get_job` avec son `job_id` pour lire le résultat final.
 
-Sans URL de Studio, la CLI décrit tout le registre et exécute `list_formats`. Les autres outils utilisent les fichiers, validations et jobs du Studio ouvert. Pour cibler une instance, démarrer son serveur **Assistants externes (MCP)** puis copier la connexion. Passer l’URL copiée dans `--mcp-url` et placer le jeton Bearer dans `CYCLAPBRIDGE_MCP_TOKEN`. Utiliser `--mcp-token-env NOM` pour lire une autre variable d’environnement. Fournir un objet d’arguments avec `--args` ou un fichier avec `--args-file`. L’URL doit être l’adresse locale donnée par l’instance Studio.
+Sans URL de Studio, la CLI décrit tout le registre et exécute `list_formats`. Les autres outils utilisent les fichiers, validations et jobs du Studio ouvert. Pour cibler une instance, démarrer son serveur **Assistants externes (MCP)** puis copier la connexion. Passer l’URL copiée dans `--mcp-url`. Free et Local contrôlé acceptent l’adresse seule. Pour Jeton seul ou Protégé, placer le jeton Bearer dans `CYCLAPBRIDGE_MCP_TOKEN`. Utiliser `--mcp-token-env NOM` pour lire une autre variable d’environnement. Fournir un objet d’arguments avec `--args` ou un fichier avec `--args-file`. L’URL doit être l’adresse locale donnée par l’instance Studio.
 
 Les commandes `capabilities`, `inspect`, `convert` et `build` gardent leurs options et sorties existantes. Elles s’exécutent directement sans Studio.
 
